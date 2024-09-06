@@ -3,19 +3,17 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
-
+const roleRoutes=require("./routes/roleRoutes")
 dotenv.config();
 connectDB();
 
 const app = express();
 
-// Middleware to parse incoming JSON
 app.use(express.json());
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-
+app.use("/api/roles", roleRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {

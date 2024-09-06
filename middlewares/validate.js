@@ -9,7 +9,7 @@ exports.registerValidation = [
     .withMessage("Password must be at least 6 characters long"),
 ];
 
-// Validation rules for login
+
 exports.loginValidation = [
   body("email").isEmail().withMessage("Invalid email format"),
   body("password")
