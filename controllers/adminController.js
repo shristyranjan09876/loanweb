@@ -79,23 +79,55 @@ exports.createEmployee = [
   }
 ];
 // Get all employees
+// Get all employees with lookup for user data
 exports.getAllEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find().populate('user', 'email');
+    const employees = await Employee.aggregate([
+      {
+        $lookup: {
+          from: 'users', 
+          localField: 'user', 
+          foreignField: '_id', 
+          as: 'userDetails', 
+        }
+      },
+      {
+        $unwind: '$userDetails', 
+      },
+      {
+        $project: {
+          firstName: 1,
+          lastName: 1,
+          department: 1,
+          position: 1,
+          salary: 1,
+          joinDate: 1,
+          'userDetails.email': 1, 
+        }
+      }
+    ]);
+
     res.json(employees);
   } catch (error) {
-    console.error("Error fetching employees:", error); // Added logging for better error tracking
+    console.error("Error fetching employees:", error);
     res.status(400).json({ error: error.message });
   }
 };
 
+
 // Update an employee
 exports.updateEmployee = async (req, res) => {
   try {
-    const { employeeId } = req.params;
+    const { _id } = req.params; // Extract _id from the URL parameters
     const updates = req.body;
 
-    const employee = await Employee.findByIdAndUpdate(employeeId, updates, { new: true });
+    if (!_id) {
+      return res.status(400).json({ error: 'Employee ID (_id) is required for updating' });
+    }
+
+    // Find and update the employee using _id
+    const employee = await Employee.findByIdAndUpdate(_id, updates, { new: true });
+
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
     }
@@ -108,17 +140,24 @@ exports.updateEmployee = async (req, res) => {
 };
 
 // Delete an employee
+// Delete an employee
 exports.deleteEmployee = async (req, res) => {
   try {
-    const { employeeId } = req.params;
+    const { _id } = req.params; 
 
-    const employee = await Employee.findById(employeeId);
+    if (!_id) {
+      return res.status(400).json({ error: 'Employee ID (_id) is required for deletion' });
+    }
+
+    
+    const employee = await Employee.findById(_id);
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
     }
 
+    
     await User.findByIdAndDelete(employee.user);
-    await Employee.findByIdAndDelete(employeeId);
+    await Employee.findByIdAndDelete(_id);
 
     res.json({ message: 'Employee deleted successfully' });
   } catch (error) {

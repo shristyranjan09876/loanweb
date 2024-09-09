@@ -85,15 +85,12 @@ exports.forgotPassword = async (req, res) => {
     res.status(500).json({ error: "An error occurred while sending the reset link." });
   }
 };
-const User = require("../models/User");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
 
-    // Verify the token
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     const user = await User.findById(decoded.userId);
@@ -101,17 +98,17 @@ exports.resetPassword = async (req, res) => {
       return res.status(404).json({ error: "Invalid token or user not found" });
     }
 
-    // Check if the token is expired (if you are saving the expiration on the user document)
+    
     if (Date.now() > user.resetPasswordExpires) {
       return res.status(400).json({ error: "Password reset token has expired" });
     }
 
-    // Hash the new password using bcrypt.hashSync (similar to your login logic)
-    const hashedPassword = bcrypt.hashSync(newPassword, 10); // 10 is the salt rounds
+    
+    const hashedPassword = bcrypt.hashSync(newPassword, 10); 
 
-    // Update user's password
+    
     user.password = hashedPassword;
-    user.resetPasswordToken = undefined; // Clear the reset token
+    user.resetPasswordToken = undefined; 
     user.resetPasswordExpires = undefined;
     await user.save();
 
