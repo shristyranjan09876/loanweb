@@ -7,4 +7,7 @@ router.post('/employees', authenticate, authorizeAdmin, adminController.createEm
 router.get('/employees', authenticate, authorizeAdmin, adminController.getAllEmployees);
 router.put('/employees/:_id', authenticate, authorizeAdmin, adminController.updateEmployee);
 router.delete('/employees/:_id', authenticate, authorizeAdmin, adminController.deleteEmployee);
+
+router.get('/employee/:_id',authenticate,authorizeAdmin,adminController.getEmployeeProfile);
+
 module.exports=router;

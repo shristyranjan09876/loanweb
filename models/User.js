@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String },
   role: { type: String, enum: ["admin", "employee"], default: "employee" },
   employeeProfile: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
+  resetPasswordOTP: String,
+  resetPasswordOTPExpires: Date,
 });
 
 module.exports = mongoose.model("users", userSchema);
