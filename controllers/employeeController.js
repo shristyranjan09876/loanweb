@@ -14,7 +14,7 @@ exports.getEmployeeProfile = async (req, res) => {
           as: 'userDetails'
         }
       },
-      // { $unwind: { path: '$userDetails', preserveNullAndEmptyArrays: true } },
+   
       {
         $project: {
           _id: 1,

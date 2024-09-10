@@ -148,34 +148,27 @@ exports.verifyOTP = async (req, res) => {
 
 
 // Reset Password
+
 exports.resetPassword = async (req, res) => {
   try {
-    const { resetToken, newPassword } = req.body;
-    console.log("Resetting password using token:", resetToken);
+    const { newPassword } = req.body;
 
-    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
-    console.log("Token decoded:", decoded);
+    console.log("Reset password request for user:", req.user.email);
 
-    const user = await User.findById(decoded.userId);
-    console.log("User lookup complete:", user);
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    if (!user) {
-      console.log("Invalid reset token");
-      return res.status(400).json({ error: "Invalid reset token" });
-    }
+    // Update user's password in the database
+    req.user.password = hashedPassword;
+    req.user.resetPasswordOTP = undefined; // Clear the OTP
+    req.user.resetPasswordOTPExpires = undefined; // Clear OTP expiry
+    await req.user.save();
 
-    const hashedPassword = bcrypt.hashSync(newPassword, 10);
-    console.log("New hashed password:", hashedPassword);
+    console.log("Password successfully reset for user:", req.user.email);
 
-    user.password = hashedPassword;
-    user.resetPasswordOTP = undefined;
-    user.resetPasswordOTPExpires = undefined;
-    await user.save();
-    console.log("Password reset successful for user:", user.email);
-
-    res.status(200).json({ message: "Password reset successful" });
+    res.status(200).json({ message: "Password successfully reset" });
   } catch (error) {
     console.error("Reset Password Error:", error);
-    res.status(400).json({ error: "Invalid or expired token" });
+    res.status(500).json({ error: "An error occurred while resetting the password." });
   }
 };

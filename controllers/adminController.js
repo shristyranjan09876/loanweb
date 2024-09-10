@@ -171,7 +171,7 @@ exports.getEmployeeProfile = async (req, res) => {
   try {
    const employee_id=req.params._id
     const employee = await Employee.aggregate([
-      { $match: { user:new mongoose.Types.ObjectId(employee_id) } },
+      { $match: { _id:new mongoose.Types.ObjectId(employee_id) } },
       {
         $lookup: {
           from: 'users', // The name of the User collection
