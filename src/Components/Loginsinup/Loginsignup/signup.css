@@ -1,0 +1,159 @@
+.signup {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('src/assets/l.avif'); 
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .overlay-content {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    color: black;
+  }
+  
+  .text-section {
+    flex: 1;
+    padding: 20px;
+    max-width: 500px;
+  }
+  
+  .text-section h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+  }
+  
+  .text-section p {
+    font-size: 1.5rem;
+  }
+  
+  .signup-form {
+    flex: 1;
+    padding: 20px;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .signup-form form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formsec {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formsec label {
+    font-weight: bold;
+    margin: 10px 0 5px;
+  }
+  
+  .formsec input {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .error {
+    color: red;
+    font-size: 0.9rem;
+    display: none;
+  }
+  
+  .signup-form input:invalid + .error {
+    display: block;
+  }
+  
+  .signup-form button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .signup-form button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Error message styling */
+  .error-message {
+    color: red;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+    .text-section h1 {
+      font-size: 2.5rem;
+    }
+    .text-section p {
+      font-size: 1.25rem;
+    }
+  }
+  
+  @media (max-width: 992px) {
+    .overlay-content {
+      justify-content: center;
+    }
+    .text-section {
+      max-width: 450px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .overlay-content {
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+    .text-section, .signup-form {
+      max-width: 100%;
+      padding: 10px;
+    }
+    .text-section h1 {
+      font-size: 2rem;
+    }
+    .text-section p {
+      font-size: 1.2rem;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .text-section h1 {
+      font-size: 1.75rem;
+    }
+    .text-section p {
+      font-size: 1rem;
+    }
+    .signup-form {
+      max-width: 100%;
+    }
+    .signup-form input {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+    .signup-form button {
+      padding: 8px 10px;
+      font-size: 0.9rem;
+    }
+  }
+  

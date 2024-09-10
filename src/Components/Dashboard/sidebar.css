@@ -1,0 +1,10 @@
+
+  /* Ensure the Navbar has full width and is positioned correctly */
+.navbar {
+  width: 100%;
+}
+
+/* Push the navigation items to the right */
+.navbar-nav {
+  margin-left: auto;
+}
