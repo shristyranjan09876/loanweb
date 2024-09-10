@@ -40,7 +40,7 @@ exports.login = async (req, res) => {
 
     console.log("JWT token generated:", token);
     console.log("Login successful for email:", email);
-    res.json({ token, role: user.role });
+    res.status(200).json({ token, role: user.role });
   } catch (error) {
     console.error("Login error:", error);
     res.status(400).json({ error: error.message });
@@ -74,6 +74,7 @@ exports.forgotPassword = async (req, res) => {
     console.log("OTP generated and saved:", otp);
     console.log("OTP saved in database:", user.resetPasswordOTP);
     console.log("OTP expiration saved:", user.resetPasswordOTPExpires);
+
     // Set up nodemailer transport
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
@@ -102,7 +103,6 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-
 // Verify OTP
 exports.verifyOTP = async (req, res) => {
   try {
@@ -121,7 +121,6 @@ exports.verifyOTP = async (req, res) => {
     console.log("Stored OTP:", user.resetPasswordOTP);
     console.log("Stored OTP Expiration:", user.resetPasswordOTPExpires);
     console.log("Current Time:", new Date());
-    console.log("Full user object:", JSON.stringify(user, null, 2));
 
     if (user.resetPasswordOTP !== otp) {
       console.log("OTP mismatch for email:", email);
@@ -146,9 +145,7 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
-
 // Reset Password
-
 exports.resetPassword = async (req, res) => {
   try {
     const { newPassword } = req.body;
