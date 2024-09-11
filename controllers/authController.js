@@ -102,7 +102,6 @@ exports.forgotPassword = async (req, res) => {
     res.status(500).json({ error: "An error occurred while sending the OTP." });
   }
 };
-
 // Verify OTP
 exports.verifyOTP = async (req, res) => {
   try {
@@ -111,7 +110,7 @@ exports.verifyOTP = async (req, res) => {
     console.log("Verifying OTP for email:", email, "with OTP:", otp);
 
     const user = await User.findOne({ email: email.toLowerCase() });
-    
+
     if (!user) {
       console.log("No user found with email:", email);
       return res.status(404).json({ error: "User not found" });
@@ -122,11 +121,13 @@ exports.verifyOTP = async (req, res) => {
     console.log("Stored OTP Expiration:", user.resetPasswordOTPExpires);
     console.log("Current Time:", new Date());
 
+    // Check if OTP matches
     if (user.resetPasswordOTP !== otp) {
       console.log("OTP mismatch for email:", email);
       return res.status(400).json({ error: "Invalid OTP" });
     }
 
+    // Check if OTP is expired
     if (user.resetPasswordOTPExpires < new Date()) {
       console.log("OTP expired for email:", email);
       return res.status(400).json({ error: "Expired OTP" });
@@ -134,38 +135,62 @@ exports.verifyOTP = async (req, res) => {
 
     console.log("OTP valid for user:", user.email);
 
-    const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
-
-    console.log("Generated reset token for user:", resetToken);
-
-    res.status(200).json({ message: "OTP verified", status: 200, resetToken }); 
+    res.status(200).json({ message: "OTP verified", status: 200 });
   } catch (error) {
     console.error("Verify OTP Error:", error);
     res.status(400).json({ error: "Invalid or expired OTP" });
   }
 };
 
-// Reset Password
+// Reset Password (No Token)
 exports.resetPassword = async (req, res) => {
   try {
-    const { newPassword } = req.body;
+    const { email, newPassword, otp } = req.body;
 
-    console.log("Reset password request for user:", req.user.email);
+    console.log("Reset password request for email:", email);
+
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      console.log("No user found with email:", email);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log("User found:", user.email);
+    console.log("Stored OTP:", user.resetPasswordOTP);
+    console.log("Stored OTP Expiration:", user.resetPasswordOTPExpires);
+    console.log("Current Time:", new Date());
+
+    // Check if OTP matches
+    if (user.resetPasswordOTP !== otp) {
+      console.log("OTP mismatch for email:", email);
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Check if OTP is expired
+    if (user.resetPasswordOTPExpires < new Date()) {
+      console.log("OTP expired for email:", email);
+      return res.status(400).json({ error: "Expired OTP" });
+    }
+
+    console.log("OTP valid, proceeding to reset password");
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update user's password in the database
-    req.user.password = hashedPassword;
-    req.user.resetPasswordOTP = undefined; // Clear the OTP
-    req.user.resetPasswordOTPExpires = undefined; // Clear OTP expiry
-    await req.user.save();
+    // Update the user's password and clear OTP fields
+    user.password = hashedPassword;
+    user.resetPasswordOTP = undefined; // Clear the OTP
+    user.resetPasswordOTPExpires = undefined; // Clear OTP expiration
+    await user.save();
 
-    console.log("Password successfully reset for user:", req.user.email);
+    console.log("Password successfully reset for user:", user.email);
 
-    res.status(200).json({ message: "Password successfully reset", status: 200 }); // Add status 200 here
+    res.status(200).json({ message: "Password successfully reset", status: 200 });
   } catch (error) {
     console.error("Reset Password Error:", error);
     res.status(500).json({ error: "An error occurred while resetting the password." });
   }
 };
+

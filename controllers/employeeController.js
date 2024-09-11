@@ -42,3 +42,33 @@ exports.getEmployeeProfile = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+exports.UpdateProfile=async(req,res)=>{
+
+  try {
+    const { _id } = req.params; // Extract _id from the URL parameters
+    const updates = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ error: 'Employee ID (_id) is required for updating' });
+    }
+
+    // Find and update the employee using _id
+    const employee = await Employee.findByIdAndUpdate(_id, updates, { new: true });
+
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    res.json(employee);
+  } catch (error) {
+    console.error("Error updating employee:", error); // Added logging for better error tracking
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
+
+
+
+
+

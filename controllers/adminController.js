@@ -78,7 +78,7 @@ exports.createEmployee = [
     }
   }
 ];
-// Get all employees
+
 // Get all employees with lookup for user data
 exports.getAllEmployees = async (req, res) => {
   try {
