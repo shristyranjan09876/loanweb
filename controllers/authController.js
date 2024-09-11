@@ -40,7 +40,7 @@ exports.login = async (req, res) => {
 
     console.log("JWT token generated:", token);
     console.log("Login successful for email:", email);
-    res.status(200).json({ token, role: user.role });
+    res.status(200).json({ message: "Login successful", token, role: user.role }); 
   } catch (error) {
     console.error("Login error:", error);
     res.status(400).json({ error: error.message });
@@ -65,7 +65,7 @@ exports.forgotPassword = async (req, res) => {
     // Generate and set OTP and expiration
     const otp = generateOTP();
     user.resetPasswordOTP = otp;
-    user.resetPasswordOTPExpires = new Date(Date.now() + 3600000); // 1 hour from now
+    user.resetPasswordOTPExpires = new Date(Date.now() + 3600000);
     
     // Save the updated user document
     await user.save();
@@ -96,7 +96,7 @@ exports.forgotPassword = async (req, res) => {
 
     console.log("Password reset OTP sent to:", user.email);
 
-    res.status(200).json({ message: "OTP sent to email" });
+    res.status(200).json({ message: "OTP sent to email", status: 200 }); 
   } catch (error) {
     console.error("Forgot Password Error:", error);
     res.status(500).json({ error: "An error occurred while sending the OTP." });
@@ -138,7 +138,7 @@ exports.verifyOTP = async (req, res) => {
 
     console.log("Generated reset token for user:", resetToken);
 
-    res.status(200).json({ message: "OTP verified", resetToken });
+    res.status(200).json({ message: "OTP verified", status: 200, resetToken }); 
   } catch (error) {
     console.error("Verify OTP Error:", error);
     res.status(400).json({ error: "Invalid or expired OTP" });
@@ -163,7 +163,7 @@ exports.resetPassword = async (req, res) => {
 
     console.log("Password successfully reset for user:", req.user.email);
 
-    res.status(200).json({ message: "Password successfully reset" });
+    res.status(200).json({ message: "Password successfully reset", status: 200 }); // Add status 200 here
   } catch (error) {
     console.error("Reset Password Error:", error);
     res.status(500).json({ error: "An error occurred while resetting the password." });
