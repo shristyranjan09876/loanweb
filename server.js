@@ -8,7 +8,7 @@ const helmet = require('helmet');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
-
+const loanRoutes=require('./routes/loanRoutes')
 dotenv.config();
 
 const app = express();
@@ -30,6 +30,7 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/auth', authRoutes);
 app.use('/api/employee', employeeRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', loanRoutes);      // Base path for loan-related routes
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

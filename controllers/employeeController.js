@@ -1,11 +1,15 @@
 
 const Employee = require('../models/Employee');
 const mongoose = require('mongoose');
+
+
 exports.getEmployeeProfile = async (req, res) => {
   try {
-   const employee_id=req.params._id
+    const userId = req.user._id;  
+    console.log("User ID from token:", userId);
+
     const employee = await Employee.aggregate([
-      { $match: { user: new mongoose.Types.ObjectId(employee_id) } },
+      { $match: { user: new mongoose.Types.ObjectId(userId) } },  // Match the user ID from token
       {
         $lookup: {
           from: 'users', // The name of the User collection
@@ -14,7 +18,6 @@ exports.getEmployeeProfile = async (req, res) => {
           as: 'userDetails'
         }
       },
-   
       {
         $project: {
           _id: 1,
@@ -42,18 +45,22 @@ exports.getEmployeeProfile = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-exports.UpdateProfile=async(req,res)=>{
 
+exports.UpdateProfile = async (req, res) => {
   try {
-    const { _id } = req.params; // Extract _id from the URL parameters
+    const userId = req.user._id;  // Extract user ID from token
     const updates = req.body;
 
-    if (!_id) {
-      return res.status(400).json({ error: 'Employee ID (_id) is required for updating' });
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
     }
 
-    // Find and update the employee using _id
-    const employee = await Employee.findByIdAndUpdate(_id, updates, { new: true });
+    // Find and update the employee using the user ID from the token
+    const employee = await Employee.findOneAndUpdate(
+      { user: userId },  // Match the employee by user ID from the token
+      updates,
+      { new: true }
+    );
 
     if (!employee) {
       return res.status(404).json({ error: 'Employee not found' });
@@ -61,11 +68,10 @@ exports.UpdateProfile=async(req,res)=>{
 
     res.json(employee);
   } catch (error) {
-    console.error("Error updating employee:", error); // Added logging for better error tracking
+    console.error('Error updating employee:', error);  // Added logging for better error tracking
     res.status(400).json({ error: error.message });
   }
 };
-
 
 
 

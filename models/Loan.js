@@ -1,59 +1,17 @@
-const { required } = require("joi");
+const mongoose = require('mongoose');
 
 const LoanSchema = new mongoose.Schema({
-    employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' ,required:true},
-    amount: {type:Number},
-    purpose:{type:String},
-    status: { type: String, enum: ['pending', 'approved', 'rejected', 'completed',] },
+    employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
+    amount: { type: Number, required: true },
+    purpose: { type: String, required: true },
+    status: { type: String, enum: ['pending', 'approved', 'rejected', 'completed'], default: 'pending' },
     appliedDate: { type: Date, default: Date.now },
-    approvedDate: {type:Date},
-    disburseDate: {type:Date},
-    closeDate: {type:Date},
-    tenure: {type:Number}, 
- 
-  });
-  
-  const Loan = mongoose.model('Loan', LoanSchema);
+    approvedDate: { type: Date },
+    disburseDate: { type: Date },
+    closeDate: { type: Date },
+    tenure: { type: Number, required: true }
+});
 
+const Loan = mongoose.model('Loan', LoanSchema);
 
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
- 
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
+module.exports = Loan;  
