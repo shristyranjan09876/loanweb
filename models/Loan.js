@@ -9,7 +9,14 @@ const LoanSchema = new mongoose.Schema({
     approvedDate: { type: Date },
     disburseDate: { type: Date },
     closeDate: { type: Date },
-    tenure: { type: Number, required: true }
+    tenure: { type: Number, required: true },
+    requestedRepaymentPeriod: { type: Number, required: true }, // in months
+    repaymentSchedule: [{
+        dueDate: { type: Date },
+        amount: { type: Number },
+        status: { type: String, enum: ['pending', 'paid'], default: 'pending' },
+      }],
+      documents: [{ type: String, required: false }],
 });
 
 const Loan = mongoose.model('Loan', LoanSchema);
