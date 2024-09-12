@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import './signup.css';
 import { Link, useNavigate } from 'react-router-dom';
-//import axios from 'axios'
+import axios from 'axios'
 
-const Login = ({onLogin}) => {
+const Login = ({ onLogin }) => {
     const [userDetails, setUserDetails] = useState({
         email: "",
         password: "",
+        userType:"employee"
     });
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
+    const [loginError, setLoginError] = useState('');
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -49,7 +52,7 @@ const Login = ({onLogin}) => {
         return error;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
         let isValid = true;
@@ -68,12 +71,36 @@ const Login = ({onLogin}) => {
             console.log("Please fill the form correctly:");
             return;
         }
-        console.log("Form submitted successfully:", userDetails);
-        // Navigate to another page if login is successful
-        // navigate('/some-path');
+        try {
+            const apiUrl = userDetails.userType === 'admin'
+            ? 'http://localhost:3000/api/auth/login'
+            : 'http://localhost:3000/api/auth/login';
+
+        const response = await axios.post(apiUrl, {
+            email: userDetails.email,
+            password: userDetails.password
+        });
+
+        const { token, role } = response.data;
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', role);
+        console.log(response.data);
         onLogin();
-    navigate('/dashboard');
-    };
+        
+        if (role === 'admin') {
+            navigate('/dashboard');
+        } else if (role === 'employee') {
+            navigate('/dashboard'); 
+            console.log("employee login",response)
+        } else {
+            setLoginError("Unauthorized role.");
+        }
+
+        } catch (error) {
+            console.error("Login failed:", error.response ? error.response.data : error.message);
+            setLoginError("Login failed. Please check your credentials.");
+        }
+    }
 
     return (
         <div className="signup">
@@ -86,6 +113,7 @@ const Login = ({onLogin}) => {
                     <div className="signup-form">
                         <form onSubmit={handleSubmit} noValidate>
                             <h2 style={{ textAlign: 'center' }}>Log-in</h2>
+                            {loginError && <p className="error-message">{loginError}</p>}
                             <div className='formsec'>
                                 <label htmlFor='email'>Email:</label>
                                 <input

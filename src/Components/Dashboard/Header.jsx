@@ -2,8 +2,9 @@ import React from 'react'
 import 
  {BsFillBellFill, BsFillEnvelopeFill, BsPersonCircle, BsSearch, BsJustify}
  from 'react-icons/bs'
+ import LogoutIcon from '@mui/icons-material/Logout';
 
-function Header({OpenSidebar}) {
+const Header = ({OpenSidebar,handleLogout}) =>{
   return (
     <header className='header'>
         <div className='menu-icon'>
@@ -15,7 +16,8 @@ function Header({OpenSidebar}) {
         <div className='header-right'>
             <BsFillBellFill className='icon'/>
             <BsFillEnvelopeFill className='icon'/>
-            <BsPersonCircle className='icon'/>
+            <BsPersonCircle className='icon'/>  
+            <button type='button' onClick={handleLogout} ><LogoutIcon/></button>
         </div>
     </header>
   )

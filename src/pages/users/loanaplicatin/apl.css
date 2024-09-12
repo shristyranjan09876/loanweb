@@ -1,0 +1,121 @@
+/* Updated Container Styles */
+/* .main-container {
+  max-width: 1000px; 
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%; 
+} */
+
+.main-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+h3 {
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+h4 {
+  color: #555;
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inline-fields {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Add space between input fields */
+  flex-wrap: wrap;
+}
+
+.form-wrapper {
+  width: 90%;
+}
+
+.loan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.required {
+  color: red;
+}
+
+.ifield {
+  width: 100%; /* Adjust to fill the available space */
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+select.ifield, input.ifield {
+  height: 40px;
+}
+
+.radio-options input {
+  margin-right: 5px;
+  margin-left: 10px;
+}
+
+.radio-options label {
+  margin-right: 20px;
+  font-size: 14px;
+}
+
+/* Button Styles */
+.submit-button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main-container {
+    width: 100%; /* Adjust width for small screens */
+  }
+
+  .form-wrapper {
+    width: 100%;
+  }
+
+  label {
+    font-size: 13px;
+  }
+
+  .ifield {
+    font-size: 13px;
+  }
+
+  .submit-button {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+}
