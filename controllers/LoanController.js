@@ -290,10 +290,11 @@ exports.submitEMI = async (req, res) => {
 
         await loan.save();
 
-        console.log('EMI submitted successfully:', loan,status:200);
+        console.log('EMI submitted successfully:', loan );
         return res.status(200).json({
             message: 'EMI submitted successfully',
-            loan
+            loan,
+            status:200
         });
     } catch (error) {
         console.error('EMI submission error:', error);
