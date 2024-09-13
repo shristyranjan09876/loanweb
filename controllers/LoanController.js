@@ -12,7 +12,7 @@ exports.applyForLoan = async (req, res) => {
 
         const userId = req.user._id;
         const { amount, purpose, requestedRepaymentPeriod, tenure } = req.body;
-
+                                                                            
         if (!amount || !purpose || !requestedRepaymentPeriod || !tenure) {
             console.log('Invalid request: Missing fields');
             return res.status(400).json({ error: 'All fields are mandatory: amount, purpose, requestedRepaymentPeriod, and tenure' });
@@ -127,8 +127,21 @@ exports.getAllLoanApplications = async (req, res) => {
             return res.status(403).json({ error: 'Admin access required' });
         }
 
-        console.log('Aggregating all loan applications with employee details');
+        // Get loan status from query parameters
+        const loanstatus = req.query.loanstatus;
+
+        // Build match condition based on loanstatus
+        let matchCondition = {};
+        if (loanstatus) {
+            matchCondition.status = loanstatus;
+        }
+
+        console.log('Aggregating all loan applications with employee details based on loanstatus:', loanstatus);
         const loanApplications = await Loan.aggregate([
+            // Apply the match condition if loanstatus is provided
+            {
+                $match: matchCondition
+            },
             {
                 $lookup: {
                     from: 'employees', // The name of the Employee collection
@@ -164,13 +177,14 @@ exports.getAllLoanApplications = async (req, res) => {
             }
         ]);
 
-        console.log('All loan applications fetched successfully:', loanApplications);
-        return res.status(200).json({ loans: loanApplications ,status:200});
+        console.log('Loan applications fetched successfully:', loanApplications);
+        return res.status(200).json({ loans: loanApplications, status: 200 });
     } catch (error) {
         console.error('Error fetching loan applications:', error);
         return res.status(500).json({ error: 'An error occurred while fetching loan applications. Please try again later.' });
     }
 };
+
 
 // Approve Loan
 exports.approveLoan = async (req, res) => {
