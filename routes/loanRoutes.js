@@ -35,10 +35,10 @@ router.get('/loans/history', authenticate,loanController.loanHistory);
 // Admin: Get all loans applied by all users (Admin route)
 router.get('/admin/loans', authenticate, authorizeAdmin, loanController.getAllLoanApplications);
 // Admin: Approve loan (Admin route)
-router.put('/admin/loans/approve/:loanId', authenticate, authorizeAdmin, loanController.approveLoan);
+router.get('/admin/loans/approve/:loanId', authenticate, authorizeAdmin, loanController.approveLoan);
 
 // Admin: Reject loan (Admin route)
-router.put('/admin/loans/reject/:loanId', authenticate, authorizeAdmin, loanController.rejectLoan);
+router.get('/admin/loans/reject/:loanId', authenticate, authorizeAdmin, loanController.rejectLoan);
 router.post('/submitEMI/:loanId/:repaymentId',authenticate, loanController.submitEMI);
 
 module.exports = router;
