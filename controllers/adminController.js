@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { check, validationResult } = require('express-validator');
 const { v4: uuidv4 } = require('uuid');
 const mongoose=require('mongoose')
+const adminUser=require('../services/admin')
 // Create an employee
 exports.createEmployee = [
   // Validation checks
@@ -28,7 +29,7 @@ exports.createEmployee = [
       const { email, password, firstName, lastName, dateOfBirth, department, position, salary, joinDate } = req.body;
 
       // Check if the user already exists
-      const existingUser = await User.findOne({ email });
+      const existingUser = await adminUser.existUser({ email:email });
       if (existingUser) {
         return res.status(400).json({ error: 'User already exists' });
       }
@@ -52,7 +53,7 @@ exports.createEmployee = [
       await user.save();
 
       // Verify password is stored correctly in database by querying the user
-      const savedUser = await User.findOne({ email });
+      const savedUser = await adminUser.existUser({ email });
 
       // Create a new employee profile
       const employee = new Employee({

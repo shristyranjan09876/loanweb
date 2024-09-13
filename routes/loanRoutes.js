@@ -31,15 +31,14 @@ const upload = multer({
 router.post('/loans', authenticate, upload.array('documents'), loanController.applyForLoan);
 
 // Get loan history
-router.get('/loans/history', authenticate, loanController.loanHistory);
+router.get('/loans/history', authenticate,loanController.loanHistory);
+// Admin: Get all loans applied by all users (Admin route)
+router.get('/admin/loans', authenticate, authorizeAdmin, loanController.getAllLoanApplications);
+// Admin: Approve loan (Admin route)
+router.put('/admin/loans/approve/:loanId', authenticate, authorizeAdmin, loanController.approveLoan);
 
-// Get all new loan requests (admin only)
-router.get('/loans/new-requests', authenticate,authorizeAdmin, loanController.getNewLoanRequests);
-
-// Get employee details with their loans (admin only)
-router.get('/employees/:employeeId/loans', authenticate,authorizeAdmin, loanController.getEmployeeDetails);
-
-// Approve or reject a loan (admin only)
-router.put('/loans/status',authenticate,authorizeAdmin, loanController.updateLoanStatus);
+// Admin: Reject loan (Admin route)
+router.put('/admin/loans/reject/:loanId', authenticate, authorizeAdmin, loanController.rejectLoan);
+router.post('/submitEMI/:loanId/:repaymentId',authenticate, loanController.submitEMI);
 
 module.exports = router;

@@ -77,31 +77,36 @@ exports.applyForLoan = async (req, res) => {
 
 
 
-// Get Loan History
 exports.loanHistory = async (req, res) => {
-    console.log('--- Start of loanHistory function ---');
     try {
+        // Check if the user is authenticated
         if (!req.user) {
-            console.log('Authentication required: User not authenticated');
             return res.status(401).json({ error: 'Authentication required' });
         }
 
-        const userId = req.user._id;
+        // Determine if the user is an admin
+        const isAdmin = req.user.role === 'admin';
 
-        console.log('Finding employee by userId:', userId);
-        const employee = await Employee.findOne({ user: userId });
-        if (!employee) {
-            console.log('Employee not found for userId:', userId);
-            return res.status(404).json({ error: 'Employee not found' });
+        let loans;
+        if (isAdmin) {
+            // Admins fetch all loans
+            loans = await Loan.find({});
+        } else {
+            // Fetch loans only for the authenticated user
+            const userId = req.user._id;
+
+            const employee = await Employee.findOne({ user: userId });
+            if (!employee) {
+                return res.status(404).json({ error: 'Employee not found' });
+            }
+
+            loans = await Loan.find({ employee: employee._id });
         }
 
-        console.log('Fetching all loans for employee:', employee._id);
-        const loans = await Loan.find({ employee: employee._id });
-
-        // Separate loans into categories
+        // Categorize loans based on their status
         const completedLoans = loans.filter(loan => loan.status === 'completed');
-        const pendingLoans = loans.filter(loan => loan.status === 'approved');
-        const newApplications = loans.filter(loan => loan.status === 'pending');
+        const pendingLoans = loans.filter(loan => loan.status === 'approved'); // Approved loans are shown as pendingLoans
+        const newApplications = loans.filter(loan => loan.status === 'pending'); // Pending loans are shown as newApplications
 
         // Format response
         const loanHistory = {
@@ -114,7 +119,7 @@ exports.loanHistory = async (req, res) => {
                 amount: loan.amount,
                 disburseDate: loan.disburseDate,
                 tenure: loan.tenure,
-                submittedEMI: loan.repaymentSchedule.filter(e => e.status === 'paid').length,
+                submittedEMI: loan.repaymentSchedule ? loan.repaymentSchedule.filter(e => e.status === 'paid').length : 0,
                 closeDate: loan.closeDate
             })),
             newApplications: newApplications.map(loan => ({
@@ -131,9 +136,14 @@ exports.loanHistory = async (req, res) => {
     }
 };
 
-// Get all new loan requests with employee details
-exports.getNewLoanRequests = async (req, res) => {
-    console.log('--- Start of getNewLoanRequests function ---');
+
+
+
+
+
+// Get all loan applications with employee details
+exports.getAllLoanApplications = async (req, res) => {
+    console.log('--- Start of getAllLoanApplications function ---');
     try {
         // Validate admin authentication
         if (!req.user || req.user.role !== 'admin') {
@@ -141,12 +151,8 @@ exports.getNewLoanRequests = async (req, res) => {
             return res.status(403).json({ error: 'Admin access required' });
         }
 
-        console.log('Aggregating new loan requests with employee details');
-        // Aggregate loans with employee details
-        const newLoanRequests = await Loan.aggregate([
-            {
-                $match: { status: 'pending' }
-            },
+        console.log('Aggregating all loan applications with employee details');
+        const loanApplications = await Loan.aggregate([
             {
                 $lookup: {
                     from: 'employees', // The name of the Employee collection
@@ -160,102 +166,303 @@ exports.getNewLoanRequests = async (req, res) => {
                     path: '$employeeDetails',
                     preserveNullAndEmptyArrays: true
                 }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    amount: 1,
+                    status: 1,
+                    purpose: 1,
+                    requestedRepaymentPeriod: 1,
+                    tenure: 1,
+                    employeeDetails: {
+                        _id: 1,
+                        name: 1,
+                        salary: 1,
+                        user: 1
+                    },
+                    documents: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
             }
         ]);
 
-        console.log('New loan requests fetched successfully:', newLoanRequests);
-        res.status(200).json(newLoanRequests);
+        console.log('All loan applications fetched successfully:', loanApplications);
+        return res.status(200).json({ loans: loanApplications });
     } catch (error) {
-        console.error('Error fetching new loan requests:', error);
-        res.status(500).json({ error: 'An error occurred while fetching new loan requests. Please try again later.' });
+        console.error('Error fetching loan applications:', error);
+        return res.status(500).json({ error: 'An error occurred while fetching loan applications. Please try again later.' });
     }
 };
 
-// Get employee details along with their loans
-exports.getEmployeeDetails = async (req, res) => {
-    console.log('--- Start of getEmployeeDetails function ---');
+// Approve Loan
+exports.approveLoan = async (req, res) => {
+    console.log('--- Start of approveLoan function ---');
     try {
+        // Validate admin authentication
         if (!req.user || req.user.role !== 'admin') {
             console.log('Admin access required: User not authorized');
             return res.status(403).json({ error: 'Admin access required' });
         }
 
-        const { employeeId } = req.params;
-
-        console.log('Finding employee by employeeId:', employeeId);
-        const employee = await Employee.findById(employeeId);
-        if (!employee) {
-            console.log('Employee not found for employeeId:', employeeId);
-            return res.status(404).json({ error: 'Employee not found' });
-        }
-
-        console.log('Aggregating loans for employee:', employeeId);
-        // Aggregate loans for the specific employee with details
-        const loans = await Loan.aggregate([
-            {
-                $match: { employee: mongoose.Types.ObjectId(employeeId) }
-            },
-            {
-                $lookup: {
-                    from: 'employees', // The name of the Employee collection
-                    localField: 'employee',
-                    foreignField: '_id',
-                    as: 'employeeDetails'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$employeeDetails',
-                    preserveNullAndEmptyArrays: true
-                }
-            }
-        ]);
-
-        console.log('Employee details and loans fetched successfully:', { employee, loans });
-        res.status(200).json({
-            employee,
-            loans
-        });
-    } catch (error) {
-        console.error('Error fetching employee details:', error);
-        res.status(500).json({ error: 'An error occurred while fetching employee details. Please try again later.' });
-    }
-};
-
-// Approve or reject a loan
-exports.updateLoanStatus = async (req, res) => {
-    console.log('--- Start of updateLoanStatus function ---');
-    try {
-        if (!req.user || req.user.role !== 'admin') {
-            console.log('Admin access required: User not authorized');
-            return res.status(403).json({ error: 'Admin access required' });
-        }
-
-        const { loanId, status } = req.body;
-
-        if (!loanId || !status || !['approved', 'rejected'].includes(status)) {
-            console.log('Invalid request: Missing or incorrect parameters');
-            return res.status(400).json({ error: 'Invalid request' });
-        }
+        const { loanId } = req.params;
 
         console.log('Finding loan by loanId:', loanId);
-        // Find and update the loan status
         const loan = await Loan.findById(loanId);
         if (!loan) {
-            console.log('Loan not found for loanId:', loanId);
+            console.log('Loan not found:', loanId);
             return res.status(404).json({ error: 'Loan not found' });
         }
 
-        loan.status = status;
-        if (status === 'approved') {
-            loan.approvedDate = new Date();
+        if (loan.status !== 'pending') {
+            console.log('Loan is not pending:', loanId);
+            return res.status(400).json({ error: 'Only pending loans can be approved' });
         }
+
+        loan.status = 'approved';
+        loan.disburseDate = new Date();
+
         await loan.save();
 
-        console.log('Loan status updated successfully:', loan);
-        res.status(200).json({ message: 'Loan status updated successfully', loan });
+        console.log('Loan approved successfully:', loan);
+        return res.status(200).json({ message: 'Loan approved successfully', loan });
     } catch (error) {
-        console.error('Error updating loan status:', error);
-        res.status(500).json({ error: 'An error occurred while updating the loan status. Please try again later.' });
+        console.error('Loan approval error:', error);
+        return res.status(500).json({ error: 'An error occurred while approving the loan' });
     }
 };
+
+// Reject Loan
+exports.rejectLoan = async (req, res) => {
+    console.log('--- Start of rejectLoan function ---');
+    try {
+        // Validate admin authentication
+        if (!req.user || req.user.role !== 'admin') {
+            console.log('Admin access required: User not authorized');
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        const { loanId } = req.params;
+
+        console.log('Finding loan by loanId:', loanId);
+        const loan = await Loan.findById(loanId);
+        if (!loan) {
+            console.log('Loan not found:', loanId);
+            return res.status(404).json({ error: 'Loan not found' });
+        }
+
+        if (loan.status !== 'pending') {
+            console.log('Loan is not pending:', loanId);
+            return res.status(400).json({ error: 'Only pending loans can be rejected' });
+        }
+
+        loan.status = 'rejected';
+
+        await loan.save();
+
+        console.log('Loan rejected successfully:', loan);
+        return res.status(200).json({ message: 'Loan rejected successfully', loan });
+    } catch (error) {
+        console.error('Loan rejection error:', error);
+        return res.status(500).json({ error: 'An error occurred while rejecting the loan' });
+    }
+};
+
+
+
+
+
+
+
+
+
+// Submit EMI and mark it as paid
+exports.submitEMI = async (req, res) => {
+    console.log('--- Start of submitEMI function ---');
+    try {
+        if (!req.user) {
+            console.log('Authentication required: User not authenticated');
+            return res.status(401).json({ error: 'Authentication required' });
+        }
+
+        const { loanId, repaymentId } = req.params;
+
+        console.log('Finding loan by loanId:', loanId);
+        const loan = await Loan.findById(loanId);
+        if (!loan) {
+            console.log('Loan not found:', loanId);
+            return res.status(404).json({ error: 'Loan not found' });
+        }
+
+        // Find the repayment entry
+        const repayment = loan.repaymentSchedule.id(repaymentId);
+        if (!repayment) {
+            console.log('Repayment not found:', repaymentId);
+            return res.status(404).json({ error: 'Repayment entry not found' });
+        }
+
+        // Update the repayment status to 'paid'
+        repayment.status = 'paid';
+
+        // Check if all repayments are paid
+        const allPaid = loan.repaymentSchedule.every(entry => entry.status === 'paid');
+        if (allPaid) {
+            loan.status = 'completed';
+            loan.closeDate = new Date(); // Set the close date to now
+        }
+
+        await loan.save();
+
+        console.log('EMI submitted successfully:', loan);
+        return res.status(200).json({
+            message: 'EMI submitted successfully',
+            loan
+        });
+    } catch (error) {
+        console.error('EMI submission error:', error);
+        return res.status(500).json({ error: 'An error occurred while submitting the EMI' });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get employee details along with their loans
+// exports.getEmployeeDetails = async (req, res) => {
+//     console.log('--- Start of getEmployeeDetails function ---');
+//     try {
+//         if (!req.user || req.user.role !== 'admin') {
+//             console.log('Admin access required: User not authorized');
+//             return res.status(403).json({ error: 'Admin access required' });
+//         }
+
+//         const { employeeId } = req.params;
+
+//         console.log('Finding employee by employeeId:', employeeId);
+//         const employee = await Employee.findById(employeeId);
+//         if (!employee) {
+//             console.log('Employee not found for employeeId:', employeeId);
+//             return res.status(404).json({ error: 'Employee not found' });
+//         }
+
+//         console.log('Aggregating loans for employee:', employeeId);
+//         // Aggregate loans for the specific employee with details
+//         const loans = await Loan.aggregate([
+//             {
+//                 $match: { employee: mongoose.Types.ObjectId(employeeId) }
+//             },
+//             {
+//                 $lookup: {
+//                     from: 'employees', // The name of the Employee collection
+//                     localField: 'employee',
+//                     foreignField: '_id',
+//                     as: 'employeeDetails'
+//                 }
+//             },
+//             {
+//                 $unwind: {
+//                     path: '$employeeDetails',
+//                     preserveNullAndEmptyArrays: true
+//                 }
+//             }
+//         ]);
+
+//         console.log('Employee details and loans fetched successfully:', { employee, loans });
+//         res.status(200).json({
+//             employee,
+//             loans
+//         });
+//     } catch (error) {
+//         console.error('Error fetching employee details:', error);
+//         res.status(500).json({ error: 'An error occurred while fetching employee details. Please try again later.' });
+//     }
+// };
+
+
