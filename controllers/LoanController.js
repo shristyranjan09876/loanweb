@@ -67,7 +67,8 @@ exports.applyForLoan = async (req, res) => {
         console.log('Loan application submitted successfully:', newLoan);
         return res.status(201).json({
             message: 'Loan application submitted successfully',
-            loan: newLoan
+            loan: newLoan,
+            status:200
         });
     } catch (error) {
         console.error('Loan application error:', error);
@@ -104,29 +105,7 @@ exports.loanHistory = async (req, res) => {
         }
 
      
-
-        // Format response
-        // const loanHistory = {
-        //     completedLoans: completedLoans.map(loan => ({
-        //         amount: loan.amount,
-        //         disburseDate: loan.disburseDate,
-        //         closeDate: loan.closeDate
-        //     })),
-        //     pendingLoans: pendingLoans.map(loan => ({
-        //         amount: loan.amount,
-        //         disburseDate: loan.disburseDate,
-        //         tenure: loan.tenure,
-        //         submittedEMI: loan.repaymentSchedule ? loan.repaymentSchedule.filter(e => e.status === 'paid').length : 0,
-        //         closeDate: loan.closeDate
-        //     })),
-        //     newApplications: newApplications.map(loan => ({
-        //         amount: loan.amount,
-        //         status: loan.status
-        //     }))
-        // };
-
-        // console.log('Loan history fetched successfully:', loanHistory);
-        return res.status(200).json({ loans });
+        return res.status(200).json({ loans ,status:200});
     } catch (error) {
         console.error('Loan history error:', error);
         return res.status(500).json({ error: error.message});
@@ -186,7 +165,7 @@ exports.getAllLoanApplications = async (req, res) => {
         ]);
 
         console.log('All loan applications fetched successfully:', loanApplications);
-        return res.status(200).json({ loans: loanApplications });
+        return res.status(200).json({ loans: loanApplications ,status:200});
     } catch (error) {
         console.error('Error fetching loan applications:', error);
         return res.status(500).json({ error: 'An error occurred while fetching loan applications. Please try again later.' });
@@ -223,7 +202,7 @@ exports.approveLoan = async (req, res) => {
         await loan.save();
 
         console.log('Loan approved successfully:', loan);
-        return res.status(200).json({ message: 'Loan approved successfully', loan });
+        return res.status(200).json({ message: 'Loan approved successfully', loan ,status:200 });
     } catch (error) {
         console.error('Loan approval error:', error);
         return res.status(500).json({ error: 'An error occurred while approving the loan' });
@@ -259,7 +238,7 @@ exports.rejectLoan = async (req, res) => {
         await loan.save();
 
         console.log('Loan rejected successfully:', loan);
-        return res.status(200).json({ message: 'Loan rejected successfully', loan });
+        return res.status(200).json({ message: 'Loan rejected successfully', loan ,status:200});
     } catch (error) {
         console.error('Loan rejection error:', error);
         return res.status(500).json({ error: 'An error occurred while rejecting the loan' });
@@ -311,7 +290,7 @@ exports.submitEMI = async (req, res) => {
 
         await loan.save();
 
-        console.log('EMI submitted successfully:', loan);
+        console.log('EMI submitted successfully:', loan,status:200);
         return res.status(200).json({
             message: 'EMI submitted successfully',
             loan
