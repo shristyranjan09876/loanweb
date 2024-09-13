@@ -90,7 +90,7 @@ exports.loanHistory = async (req, res) => {
         let loans;
         if (isAdmin) {
             // Admins fetch all loans
-            loans = await Loan.find({});
+            loans = await Loan.find({status:req.query.loanStatus});
         } else {
             // Fetch loans only for the authenticated user
             const userId = req.user._id;
@@ -100,39 +100,36 @@ exports.loanHistory = async (req, res) => {
                 return res.status(404).json({ error: 'Employee not found' });
             }
 
-            loans = await Loan.find({ employee: employee._id });
+            loans = await Loan.find({ employee: employee._id,status:req.query.loanStatus });
         }
 
-        // Categorize loans based on their status
-        const completedLoans = loans.filter(loan => loan.status === 'completed');
-        const pendingLoans = loans.filter(loan => loan.status === 'approved'); // Approved loans are shown as pendingLoans
-        const newApplications = loans.filter(loan => loan.status === 'pending'); // Pending loans are shown as newApplications
+     
 
         // Format response
-        const loanHistory = {
-            completedLoans: completedLoans.map(loan => ({
-                amount: loan.amount,
-                disburseDate: loan.disburseDate,
-                closeDate: loan.closeDate
-            })),
-            pendingLoans: pendingLoans.map(loan => ({
-                amount: loan.amount,
-                disburseDate: loan.disburseDate,
-                tenure: loan.tenure,
-                submittedEMI: loan.repaymentSchedule ? loan.repaymentSchedule.filter(e => e.status === 'paid').length : 0,
-                closeDate: loan.closeDate
-            })),
-            newApplications: newApplications.map(loan => ({
-                amount: loan.amount,
-                status: loan.status
-            }))
-        };
+        // const loanHistory = {
+        //     completedLoans: completedLoans.map(loan => ({
+        //         amount: loan.amount,
+        //         disburseDate: loan.disburseDate,
+        //         closeDate: loan.closeDate
+        //     })),
+        //     pendingLoans: pendingLoans.map(loan => ({
+        //         amount: loan.amount,
+        //         disburseDate: loan.disburseDate,
+        //         tenure: loan.tenure,
+        //         submittedEMI: loan.repaymentSchedule ? loan.repaymentSchedule.filter(e => e.status === 'paid').length : 0,
+        //         closeDate: loan.closeDate
+        //     })),
+        //     newApplications: newApplications.map(loan => ({
+        //         amount: loan.amount,
+        //         status: loan.status
+        //     }))
+        // };
 
-        console.log('Loan history fetched successfully:', loanHistory);
-        return res.status(200).json({ loanHistory });
+        // console.log('Loan history fetched successfully:', loanHistory);
+        return res.status(200).json({ loans });
     } catch (error) {
         console.error('Loan history error:', error);
-        return res.status(500).json({ error: 'An error occurred while retrieving loan history' });
+        return res.status(500).json({ error: error.message});
     }
 };
 
