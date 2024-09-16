@@ -1,0 +1,62 @@
+.add-store-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 35px;
+   
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Form elements styling */
+  .add-store-container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .add-store-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .add-store-container label {
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .add-store-container input[type="text"],
+  .add-store-container input[type="tel"],
+  .add-store-container input[type="date"],
+  .add-store-container input[type="number"],
+  .add-store-container input[type="email"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 100%;
+  }
+  
+  .add-store-container input[type="text"]:focus,
+  .add-store-container input[type="tel"]:focus,
+  .add-store-container input[type="email"]:focus {
+    border-color: #1a73e8;
+    outline: none;
+  }
+  
+  .add-store-container button[type="submit"] {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #1a73e8;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-store-container button[type="submit"]:hover {
+    background-color: #155ab2;
+  }
+  .error{
+    color: red;
+  }

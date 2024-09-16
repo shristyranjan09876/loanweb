@@ -1,0 +1,74 @@
+.profile-card {
+    margin-left: 70px;
+    width: 100vh;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .profile-card h2 {
+    font-size: 2rem; /* Larger heading */
+    color: #343a40; /* Darker text color */
+  }
+  
+  .form-group label {
+    font-size: 1.1rem; /* Slightly larger labels */
+    color: #495057; /* Darker color for labels */
+  }
+  
+  .form-group p {
+    font-size: 1rem; /* Regular font size for content */
+    color: #212529; /* Default text color */
+  }
+  
+  .btn-primary {
+    background-color: #007bff; /* Primary button color */
+    border-color: #007bff; /* Border color for button */
+  }
+  
+  .btn-primary:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+    border-color: #004085; /* Darker border on hover */
+  }
+  /* edit profile */
+
+
+
+
+  /* EditProfilePage.css */
+
+.edit-profile-page {
+   justify-content: center;
+   align-items: center;
+  }
+  
+  .edit-profile-card {
+padding-left: 10px;
+    padding: 2rem; /* Padding inside the card */
+    width: 100vh;
+    justify-content: center;
+  }
+  
+  .edit-profile-card h2 {
+    font-size: 2rem; /* Larger heading */
+    color: #343a40; /* Darker text color */
+  }
+  
+  .form-group label {
+    font-size: 1.1rem; /* Slightly larger labels */
+    color: #495057; /* Darker color for labels */
+  }
+  
+  .form-group input {
+    font-size: 1rem; /* Regular font size for input fields */
+  }
+  
+  .btn-primary {
+    background-color: #007bff; /* Primary button color */
+    border-color: #007bff; /* Border color for button */
+  }
+  
+  .btn-primary:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+    border-color: #004085; /* Darker border on hover */
+  }
+  

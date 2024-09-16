@@ -124,7 +124,7 @@ const Signup = () => {
                                     onChange={handleChange}
                                 />
                                 {errors.name && <span className="error-message">{errors.name}</span>}
-                                
+
                                 <label htmlFor='lname'>Last Name:</label>
                                 <input
                                     type='text'
@@ -145,7 +145,7 @@ const Signup = () => {
                                     onChange={handleChange}
                                 />
                                 {errors.email && <span className="error-message">{errors.email}</span>}
-                                
+
                                 <label htmlFor='phone'>Phone:</label>
                                 <input
                                     type='tel'
@@ -156,7 +156,7 @@ const Signup = () => {
                                     onChange={handleChange}
                                 />
                                 {errors.phone && <span className="error-message">{errors.phone}</span>}
-                                
+
                                 <label htmlFor='password'>Password:</label>
                                 <input
                                     type='password'
@@ -167,7 +167,7 @@ const Signup = () => {
                                     onChange={handleChange}
                                 />
                                 {errors.password && <span className="error-message">{errors.password}</span>}
-                                
+
                                 <button type='submit'>Sign Up</button>
                                 <p>Already have an Account <Link to='/'>Log-in</Link></p>
                             </div>

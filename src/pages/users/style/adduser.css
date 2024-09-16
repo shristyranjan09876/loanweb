@@ -1,17 +1,17 @@
 /* adduser.css */
 
 /* Main container */
-.main-container {
+.adduser-container {
   padding: 20px;
   font-family: Arial, sans-serif;
 }
 
-.main-title {
+.adduser-title {
   margin-bottom: 20px;
   text-align: center;
 }
 
-.main-title h3 {
+.adduser-title h3 {
   margin: 0;
   font-size: 24px;
   color: #333;

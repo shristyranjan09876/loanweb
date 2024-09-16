@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './style/userlist.css';
+import moment from 'moment';
 
 const UserList = () => {
   const [userlist, setUserList] = useState([]);
@@ -15,7 +16,7 @@ const UserList = () => {
         const response = await axios.get('http://localhost:3000/api/admin/employees', {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': localStorage.getItem('token')
+            'x-access-token': localStorage.getItem('token')
           }
         });
         setUserList(response.data);
@@ -46,7 +47,7 @@ const UserList = () => {
       await axios.delete(`http://localhost:3000/api/admin/employees/${userToDelete}`, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': localStorage.getItem('token')
+          'x-access-token': localStorage.getItem('token')
         }
       });
       setUserList(userlist.filter(user => user._id !== userToDelete));
@@ -65,14 +66,13 @@ const UserList = () => {
             <tr>
               <th>First Name</th>
               <th>Last Name</th>
-              <th>Date of Birth</th>
+              {/* <th>Date of Birth</th> */}
               <th>Department</th>
               <th>Position</th>
               <th>Salary</th>
               <th>Join Date</th>
               <th>Email</th>
-              <th>Document</th>
-              <th>Actions</th>
+              <th>Edit/Delelte</th>
             </tr>
           </thead>
           <tbody>
@@ -81,20 +81,13 @@ const UserList = () => {
                 <tr key={user._id}>
                   <td>{user.firstName}</td>
                   <td>{user.lastName}</td>
-                  <td>{user.dateOfBirth}</td>
+                  {/* <td>{user.dateOfBirth}</td> */}
                   <td>{user.department}</td>
                   <td>{user.position}</td>
                   <td>${user.salary}</td>
-                  <td>{user.joinDate}</td>
-                  <td>{user.user.email}</td>
-                  <td>
-                    {user.document && (
-                      <img
-                        src={user.document} 
-                        alt="User Document"
-                      />
-                    )}
-                  </td>
+                  <td>{moment(user.joinDate).format('MMM Do YY')}</td>
+                  <td>{user.userDetails.email}</td>
+                 
                   <td className="table-actions">
                     <button onClick={() => handleEdit(user._id)} className="edit-button">Edit</button>
                     <button onClick={() => confirmDelete(user._id)} className="delete-button">Delete</button>

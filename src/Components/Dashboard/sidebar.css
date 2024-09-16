@@ -1,10 +1,42 @@
-
-  /* Ensure the Navbar has full width and is positioned correctly */
-.navbar {
-  width: 100%;
+/* General sidebar list item styles */
+.sidebar-list-item,
+.sidebar-list-drop {
+  padding: 20px;
+  font-size: 18px;
+  color: white;
+  background-color: #263043; /* Match the sidebar background */
+  border: none;
+  box-shadow: none;
 }
 
-/* Push the navigation items to the right */
-.navbar-nav {
-  margin-left: auto;
+/* Add a hover effect similar to other items */
+.sidebar-list-drop:hover,
+.sidebar-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Style for the dropdown button */
+#dropdown-loan-history {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: white; /* Ensure text color matches */
+}
+
+/* Style the dropdown menu */
+.dropdown-menu {
+  background-color: #263043; /* Match sidebar background */
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Style dropdown items to match sidebar items */
+.dropdown-item {
+  background-color: transparent !important;
+  color: white !important;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: white;
 }

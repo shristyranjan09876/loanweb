@@ -95,11 +95,14 @@ const Adduser = () => {
       const response = await axios.post("http://localhost:3000/api/admin/employees", formData, {
         headers: {
           'Content-Type': 'application/json',
-          'authorization': localStorage.getItem('token')
+          'x-access-token': localStorage.getItem('token')
         }
       });
       console.log("employee added ", response.data);
       //navigate('/userlist'); 
+      alert("User successfully added!");
+    window.location.reload(); 
+    
     } catch (error) {
       console.error("Error adding user:", error.response ? error.response.data : error.message);
       setErrors({ api: "An error occurred while adding the user. Please try again." });
@@ -125,8 +128,8 @@ const Adduser = () => {
 
   return (
     <>
-      <main className='main-container'>
-        <div className='main-title'>
+      <main className='adduser-container'>
+        <div className='adduser-title'>
           <h3>ADD USER</h3>
         </div>
         <div className="a">

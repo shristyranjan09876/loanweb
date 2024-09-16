@@ -67,7 +67,7 @@ label {
   font-size: 14px;
 }
 
-select.ifield, input.ifield {
+select.ifield, input.ifield  {
   height: 40px;
 }
 

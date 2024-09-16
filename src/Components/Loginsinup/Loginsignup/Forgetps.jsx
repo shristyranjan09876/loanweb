@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import './signup.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const Login = ({ onLogin }) => {
+const Forgetps = () => {
     const [userDetails, setUserDetails] = useState({
         email: "",
-        password: "",
-        userType:"employee"
+      
     });
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
@@ -39,13 +40,6 @@ const Login = ({ onLogin }) => {
                     error = "Please enter a valid email address.";
                 }
                 break;
-            case "password":
-                if (!value) {
-                    error = "Password is required.";
-                } else if (value.length < 6) {
-                    error = "Password must be at least 6 characters long.";
-                }
-                break;
             default:
                 break;
         }
@@ -72,35 +66,33 @@ const Login = ({ onLogin }) => {
             return;
         }
         try {
-            const apiUrl = userDetails.userType === 'admin'
-            ? 'http://localhost:3000/api/auth/login'
-            : 'http://localhost:3000/api/auth/login';
-
-        const response = await axios.post(apiUrl, {
-            email: userDetails.email,
-            password: userDetails.password
-        });
-
-        const { token, role } = response.data;
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
-        console.log(response.data);
-        onLogin();
+            const response = await axios.post( 'http://localhost:3000/api/auth/forgotpassword', {
+                    email: userDetails.email,
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
         
-        if (role === 'admin') {
-            navigate('/dashboard');
-        } else if (role === 'employee') {
-            navigate('/dashboard'); 
-            console.log("employee login",response)
-        } else {
-            setLoginError("Unauthorized role.");
-        }
-
+            console.log('API Response:', response.status); 
+            if (response.status === 200) {
+                toast.success("OTP has been sent to your email.");
+                localStorage.setItem('fEmail', userDetails.email);
+                console.log("Email sent:", response.data);
+                navigate('/otp');
+            } else {
+                toast.error(response.data?.message || "Failed to send OTP.");
+            }
+        
         } catch (error) {
-            console.error("Login failed:", error.response ? error.response.data : error.message);
-            setLoginError("Login failed. Please check your credentials.");
+            console.error('Request error:', error.response?.data || error.message);
+            toast.error("Failed to send OTP. Please try again.");
         }
-    }
+    }        
+    
+   
 
     return (
         <div className="signup">
@@ -112,7 +104,7 @@ const Login = ({ onLogin }) => {
                     </div>
                     <div className="signup-form">
                         <form onSubmit={handleSubmit} noValidate>
-                            <h2 style={{ textAlign: 'center' }}>Log-in</h2>
+                            <h2 style={{ textAlign: 'center' }}>Email Verification</h2>
                             {loginError && <p className="error-message">{loginError}</p>}
                             <div className='formsec'>
                                 <label htmlFor='email'>Email:</label>
@@ -125,22 +117,10 @@ const Login = ({ onLogin }) => {
                                     onChange={handleChange}
                                 />
                                 {errors.email && <span className="error-message">{errors.email}</span>}
-
-                                <label htmlFor='password'>Password:</label>
-                                <input
-                                    type='password'
-                                    id='password'
-                                    name='password'
-                                    placeholder='Enter your Password'
-                                    value={userDetails.password}
-                                    onChange={handleChange}
-                                />
-                                {errors.password && <span className="error-message">{errors.password}</span>}
-
-                                <button type='submit'>Log-in</button>
-                                <p>Forget password? <Link to='/forgetps'>Chnage Password</Link></p>
-                            </div>
+                                <button type='submit'>Verify Email</button>
+                               </div>
                         </form>
+                        <ToastContainer />
                     </div>
                 </div>
             </div>
@@ -148,4 +128,4 @@ const Login = ({ onLogin }) => {
     );
 }
 
-export default Login;
+export default Forgetps;
