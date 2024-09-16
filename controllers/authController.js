@@ -40,7 +40,7 @@ exports.login = async (req, res) => {
 
     console.log("JWT token generated:", token);
     console.log("Login successful for email:", email);
-    res.status(200).json({ message: "Login successful", token, role: user.role }); 
+    res.status(200).json({ message: "Login successful", token, role: user.role ,status:200}); 
   } catch (error) {
     console.error("Login error:", error);
     res.status(400).json({ error: error.message });
@@ -99,7 +99,7 @@ exports.forgotPassword = async (req, res) => {
     res.status(200).json({ message: "OTP sent to email", status: 200 }); 
   } catch (error) {
     console.error("Forgot Password Error:", error);
-    res.status(500).json({ error: "An error occurred while sending the OTP." });
+    res.status(500).json({ error: error.message });
   }
 };
 // Verify OTP
@@ -138,7 +138,7 @@ exports.verifyOTP = async (req, res) => {
     res.status(200).json({ message: "OTP verified", status: 200 });
   } catch (error) {
     console.error("Verify OTP Error:", error);
-    res.status(400).json({ error: "Invalid or expired OTP" });
+    res.status(400).json({ error: error.message });
   }
 };
 
@@ -190,7 +190,7 @@ exports.resetPassword = async (req, res) => {
     res.status(200).json({ message: "Password successfully reset", status: 200 });
   } catch (error) {
     console.error("Reset Password Error:", error);
-    res.status(500).json({ error: "An error occurred while resetting the password." });
+    res.status(500).json({ error: error.message });
   }
 };
 

@@ -72,10 +72,10 @@ exports.createEmployee = [
       user.employeeProfile = employee._id;
       await user.save();
 
-      res.status(201).json({ message: 'Employee created successfully', employee });
+      res.status(201).json({ message: 'Employee created successfully', employee ,status:200 });
     } catch (error) {
       console.error("Error creating employee:", error);
-      res.status(500).json({ error: 'Server error' });
+      res.status(500).json({ error:error.message });
     }
   }
 ];
@@ -108,7 +108,7 @@ exports.getAllEmployees = async (req, res) => {
       }
     ]);
 
-    res.json(employees);
+    res.json({employees,status:200});
   } catch (error) {
     console.error("Error fetching employees:", error);
     res.status(400).json({ error: error.message });
@@ -160,7 +160,7 @@ exports.deleteEmployee = async (req, res) => {
     await User.findByIdAndDelete(employee.user);
     await Employee.findByIdAndDelete(_id);
 
-    res.json({ message: 'Employee deleted successfully' });
+    res.json({ message: 'Employee deleted successfully',status:200 });
   } catch (error) {
     console.error("Error deleting employee:", error); // Added logging for better error tracking
     res.status(400).json({ error: error.message });

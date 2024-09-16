@@ -39,6 +39,7 @@ router.get('/admin/loans/approve/:loanId', authenticate, authorizeAdmin, loanCon
 
 // Admin: Reject loan (Admin route)
 router.get('/admin/loans/reject/:loanId', authenticate, authorizeAdmin, loanController.rejectLoan);
-router.post('/submitEMI/:loanId/:repaymentId',authenticate, loanController.submitEMI);
-
+router.post('/submitEMI/:loanId/',authenticate, loanController.submitEMI);
+// Update loan status (New route)
+router.put('/loans/:loanId/status', authenticate, authorizeAdmin, loanController.updateLoanStatus);
 module.exports = router;

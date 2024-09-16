@@ -1,5 +1,7 @@
 const Loan = require('../models/Loan');
 const Employee = require('../models/Employee');
+const nodemailer = require('nodemailer');
+const User = require('../models/User');
 
 // Apply for Loan
 exports.applyForLoan = async (req, res) => {
@@ -72,10 +74,9 @@ exports.applyForLoan = async (req, res) => {
         });
     } catch (error) {
         console.error('Loan application error:', error);
-        return res.status(500).json({ error: 'An error occurred. Please try again later.' });
+        return res.status(500).json({ error: error.message });
     }
 };
-
 
 
 exports.loanHistory = async (req, res) => {
@@ -91,24 +92,29 @@ exports.loanHistory = async (req, res) => {
         let loans;
         if (isAdmin) {
             // Admins fetch all loans
-            loans = await Loan.find({status:req.query.loanStatus});
+            loans = await Loan.find({ status: req.query.loanStatus }).exec();
         } else {
             // Fetch loans only for the authenticated user
             const userId = req.user._id;
 
-            const employee = await Employee.findOne({ user: userId });
+            // Find the employee associated with the user
+            const employee = await Employee.findOne({ user: userId }).exec();
             if (!employee) {
                 return res.status(404).json({ error: 'Employee not found' });
             }
 
-            loans = await Loan.find({ employee: employee._id,status:req.query.loanStatus });
+            console.log("Employee ID:", employee._id); // Debug: Verify the employee ID
+            // Fetch loans associated with the employee
+            loans = await Loan.find({ employee: employee._id, status: req.query.loanStatus }).exec();
         }
 
-     
-        return res.status(200).json({ loans ,status:200});
+        console.log("Loan Status Query:", req.query.loanStatus); // Debug: Verify the status query
+        console.log("Loans Returned:", loans); // Debug: Check what loans are returned
+
+        return res.status(200).json({ loans, status: 200 });
     } catch (error) {
         console.error('Loan history error:', error);
-        return res.status(500).json({ error: error.message});
+        return res.status(500).json({ error: error.message });
     }
 };
 
@@ -181,7 +187,7 @@ exports.getAllLoanApplications = async (req, res) => {
         return res.status(200).json({ loans: loanApplications, status: 200 });
     } catch (error) {
         console.error('Error fetching loan applications:', error);
-        return res.status(500).json({ error: 'An error occurred while fetching loan applications. Please try again later.' });
+        return res.status(500).json({ error: error.message });
     }
 };
 
@@ -219,7 +225,7 @@ exports.approveLoan = async (req, res) => {
         return res.status(200).json({ message: 'Loan approved successfully', loan ,status:200 });
     } catch (error) {
         console.error('Loan approval error:', error);
-        return res.status(500).json({ error: 'An error occurred while approving the loan' });
+        return res.status(500).json({ error: error.message });
     }
 };
 
@@ -255,18 +261,9 @@ exports.rejectLoan = async (req, res) => {
         return res.status(200).json({ message: 'Loan rejected successfully', loan ,status:200});
     } catch (error) {
         console.error('Loan rejection error:', error);
-        return res.status(500).json({ error: 'An error occurred while rejecting the loan' });
+        return res.status(500).json({ error: error.message });
     }
 };
-
-
-
-
-
-
-
-
-
 // Submit EMI and mark it as paid
 exports.submitEMI = async (req, res) => {
     console.log('--- Start of submitEMI function ---');
@@ -276,7 +273,8 @@ exports.submitEMI = async (req, res) => {
             return res.status(401).json({ error: 'Authentication required' });
         }
 
-        const { loanId, repaymentId } = req.params;
+        const { loanId } = req.params;
+        const { repaymentDate } = req.body; // Extract repayment date from the body
 
         console.log('Finding loan by loanId:', loanId);
         const loan = await Loan.findById(loanId);
@@ -285,11 +283,22 @@ exports.submitEMI = async (req, res) => {
             return res.status(404).json({ error: 'Loan not found' });
         }
 
-        // Find the repayment entry
-        const repayment = loan.repaymentSchedule.id(repaymentId);
+        // Parse the repayment date
+        const repaymentDateObj = new Date(repaymentDate);
+        if (isNaN(repaymentDateObj.getTime())) {
+            console.log('Invalid repayment date provided:', repaymentDate);
+            return res.status(400).json({ error: 'Invalid repayment date' });
+        }
+
+        // Find the repayment entry by matching the date
+        const repayment = loan.repaymentSchedule.find(entry => {
+            const dueDateObj = new Date(entry.dueDate); // Assuming dueDate is stored in the repayment schedule
+            return dueDateObj.toDateString() === repaymentDateObj.toDateString(); // Compare only the date, not time
+        });
+
         if (!repayment) {
-            console.log('Repayment not found:', repaymentId);
-            return res.status(404).json({ error: 'Repayment entry not found' });
+            console.log('Repayment not found for the given date:', repaymentDate);
+            return res.status(404).json({ error: 'Repayment entry not found for the given date' });
         }
 
         // Update the repayment status to 'paid'
@@ -304,20 +313,83 @@ exports.submitEMI = async (req, res) => {
 
         await loan.save();
 
-        console.log('EMI submitted successfully:', loan );
+        console.log('EMI submitted successfully:', loan);
         return res.status(200).json({
             message: 'EMI submitted successfully',
             loan,
-            status:200
+            status: 200
         });
     } catch (error) {
         console.error('EMI submission error:', error);
-        return res.status(500).json({ error: 'An error occurred while submitting the EMI' });
+        return res.status(500).json({ error: error.message });
     }
 };
 
 
 
+
+
+// Create a reusable transporter object using SMTP transport
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD
+    }
+});
+
+// Function to send email notification
+const sendEmail = async (email, loanId) => {
+    const mailOptions = {
+        from: process.env.EMAIL_USERNAME,
+        to: email,
+        subject: 'Loan Closed Notification',
+        text: `Your loan with ID: ${loanId} has been successfully closed. Congratulations!`
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully');
+    } catch (error) {
+        console.error('Error sending email: ', error);
+    }
+};
+
+// Controller to handle loan status updates
+exports.updateLoanStatus = async (req, res) => {
+    const loanId = req.params.id;
+    const { status } = req.body;
+
+    try {
+        const loan = await Loan.findById(loanId);
+
+        if (!loan) {
+            return res.status(404).json({ message: 'Loan not found' });
+        }
+
+        loan.status = status;
+
+        // If the status is closed, send the email notification
+        if (status === 'closed') {
+            const employee = await Employee.findById(loan.employee);
+            if (employee) {
+                const user = await User.findById(employee.user);
+                if (user && user.email) {
+                    await sendEmail(user.email, loanId);
+                }
+            }
+        }
+
+        // Save the updated loan
+        await loan.save();
+
+        // Return success response
+        return res.status(200).json({ message: 'Loan status updated successfully', status: 200 });
+    } catch (error) {
+        console.error('Error updating loan status: ', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
 
 
 

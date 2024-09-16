@@ -57,7 +57,7 @@ exports.UpdateProfile = async (req, res) => {
 
     // Find and update the employee using the user ID from the token
     const employee = await Employee.findOneAndUpdate(
-      { user: userId },  // Match the employee by user ID from the token
+      { user: userId },  
       updates,
       { new: true }
     );
@@ -68,7 +68,7 @@ exports.UpdateProfile = async (req, res) => {
 
     res.json(employee);
   } catch (error) {
-    console.error('Error updating employee:', error);  // Added logging for better error tracking
+    console.error('Error updating employee:', error);  
     res.status(400).json({ error: error.message });
   }
 };
