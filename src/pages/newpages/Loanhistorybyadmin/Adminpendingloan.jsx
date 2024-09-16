@@ -1,7 +1,6 @@
 import axios from 'axios'; // Add missing axios import
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import './CompleteLoan.css'; 
+import '../../newpages/CompleteLoan.css'
 import moment from 'moment';
 
 const Pendingloan = () => {
@@ -47,27 +46,24 @@ const Pendingloan = () => {
       ) : loanRequests.length === 0 ? (
         <p>No pending loans available.</p>
       ) : ( */}
-        <table className="loan-table">
+      <table className="loan-table">
           <thead>
             <tr>
               <th>Loan Amount</th>
               <th>Applied Date</th>
-              <th>Purpose</th>
-              <th>Tenure</th>
-              <th>Status</th>
-              <th>View</th>
+              <th>purpose</th>
+              <th>tenure</th>
+              <th>status</th>
             </tr>
           </thead>
           <tbody>
             {loanRequests.map((loan, index) => (
               <tr key={index} className="loan-row">
                 <td>${loan.amount}</td>
-                {/* <td>{loan.appliedDate}</td> */}
                 <td>{moment(loan.appliedDate).format('MMM Do YY')}</td>
                 <td>{loan.purpose || 'N/A'}</td>
                 <td>{loan.tenure || 'N/A'}</td> 
                 <td>{loan.status || 'N/A'}</td> 
-                <td><Link to="">View</Link></td>
               </tr>
             ))}
           </tbody>

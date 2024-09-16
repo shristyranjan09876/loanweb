@@ -1,36 +1,32 @@
 import React, { useState } from 'react';
 import './apl.css';
+import axios from 'axios';
 
 const Loanapplic = () => {
   const [userdetil, setuserdetail] = useState({
-    Desired_Loan_Amount: "",
-    Annual_Income: "",
-    Date_Of_Birth: "",
-    Bank_Name: "",
-    Account_Number: "",
-    Upload_Document: "",
+    amount: "",
     tenure: "",
-    Loan_used_for: {
-      Business_Launching: "",
-      Home_Improvement: "",
-      Education: "",
-      Investment: "",
-    },
-    Marital_Status: {
-      Married: "",
-      Single: "",
-      Divorced: "",
-    }
+    requestedRepaymentPeriod: "",
+    documents: null,
+   purpose: ""
+
   })
 
   const [error, seterror] = useState({});
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setuserdetail((prevDetails) => ({
-      ...prevDetails,
-      [name]: value
-    }));
+    const { name, value,type,files } = e.target;
+    if (type === "file") {
+      setuserdetail((prevDetails) => ({
+        ...prevDetails,
+        documents: files[0]
+      }));
+    } else {
+      setuserdetail((prevDetails) => ({
+        ...prevDetails,
+        [name]: value
+      }));
+    }
 
     const error = validateField(name, value);
     seterror((prevErrors) => ({
@@ -42,28 +38,10 @@ const Loanapplic = () => {
   const validateField = (name, value) => {
     let error = "";
     switch (name) {
-      case "Desired_Loan_Amount":
+      case "amount":
         const amount = Number(value);
         if (!value) {
           error = "Please enter the desired loan amount";
-        } else if (amount < 200000) {
-          error = "Desired loan amount should be at least 200,000.";
-        } else if (amount > 500000) {
-          error = "Desired loan amount should be 500,000 or less.";
-        }
-        break;
-      case "Annual_Income":
-        if (!value) {
-          error = "Please enter the Annual Income";
-        } else if (Number(value) > 5000000) {
-          error = "Annual Income should be 5,000,000 or less.";
-        }
-        break;
-      case "Bank_Name":
-        if (!value) {
-          error = "Bank Name is required.";
-        } else if (value.length < 6) {
-          error = "Bank Name must be at least 6 characters long.";
         }
         break;
       case "Account_Number":
@@ -79,7 +57,7 @@ const Loanapplic = () => {
     return error;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
     let isValid = true;
@@ -97,8 +75,25 @@ const Loanapplic = () => {
       console.log("Please fill the form correctly.");
       return;
     }
-
-    console.log("Form submitted successfully", userdetil);
+    const formData = new FormData();
+    formData.append('amount', userdetil.amount);
+    formData.append('tenure', userdetil.tenure);
+    formData.append('requestedRepaymentPeriod', userdetil.requestedRepaymentPeriod);
+    formData.append('purpose', userdetil.purpose);
+    formData.append('documents', userdetil.documents);
+  
+    try {
+      const response = await axios.post('http://localhost:3000/api/loans', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'x-access-token': localStorage.getItem('token')
+        }
+      });
+      console.log("submitted Application", response.data);
+    } catch (error) {
+      console.error("Error adding user:", error.response ? error.response.data : error.message);
+      seterror({ api: "An error occurred while adding the user. Please try again." });
+    }
   };
 
   return (
@@ -114,16 +109,12 @@ const Loanapplic = () => {
                 <div className="inline-fields">
                   <label>Desired Loan Amount $ <span className="required">*</span></label>
                   <label>Max amount you can apply: $500,000</label>
-                  <input type="text" name="Desired_Loan_Amount" className="ifield small-input" placeholder='Enter Loan Amount'
-                    value={userdetil.Desired_Loan_Amount} onChange={handleChange}
+                  <input type="text" name="amount" className="ifield small-input" placeholder='Enter Loan Amount'
+                    value={userdetil.amount} onChange={handleChange}
                   />
-                  {error.Desired_Loan_Amount && <span className="error-message">{error.Desired_Loan_Amount}</span>}
+                  {error.amount && <span className="error-message">{error.amount}</span>}
                   <br />
-                  <label>Annual Income $ <span className="required">*</span></label>
-                  <input type="text" name="Annual_Income" className="ifield small-input" value={userdetil.Annual_Income}
-                    onChange={handleChange} placeholder='Enter Annual Income'
-                  />
-                  {error.Annual_Income && <span className="error-message">{error.Annual_Income}</span>}
+
 
                   <label htmlFor='tenure'>Select Tenure:</label>
                   <select id='tenure' name='tenure' value={userdetil.tenure} onChange={handleChange} className='ifield'
@@ -133,97 +124,50 @@ const Loanapplic = () => {
                     <option value='6'>6 months</option>
                     <option value='12'>12 months</option>
                   </select>
+                  <label htmlFor='requestedRepaymentPeriod'>Payment Period:</label>
+                  <select id='requestedRepaymentPeriod' name='requestedRepaymentPeriod' value={userdetil.requestedRepaymentPeriod} onChange={handleChange} className='ifield'
+                  >
+                    <option value=''>--Select Payment Period--</option>
+                    <option value='6'>6 months</option>
+                    <option value='8'>8 months</option>
+                    <option value='10'>10 months</option>
+                  </select>
                 </div>
               </div>
 
               <div className='loan-purpose'>
-                <h4>Loan will be used for</h4>
+                <h6 style={{ color: 'black' }}>Loan will be used for</h6>
                 <div className="radio-options">
-                  <input type="radio" id="business" name="Loan_used_for" value="Business Launching"
+                  <input type="radio" id="business" name="purpose" value="Business Launching"
                     onChange={handleChange}
                   />
                   <label htmlFor="business">Business Launching</label>
 
-                  <input type="radio" id="home" name="Loan_used_for"
+                  <input type="radio" id="home" name="purpose"
                     value="Home Improvement"
                     onChange={handleChange}
                   />
                   <label htmlFor="home">Home Improvement</label>
 
-                  <input type="radio" id="education" name="Loan_used_for" value="Education"
+                  <input type="radio" id="education" name="purpose" value="Education"
                     onChange={handleChange}
                   />
                   <label htmlFor="education">Education</label>
 
-                  <input type="radio" id="investment" name="Loan_used_for"
+                  <input type="radio" id="investment" name="purpose"
                     value="Investment"
                     onChange={handleChange}
                   />
                   <label htmlFor="investment">Investment</label>
                 </div>
               </div>
-
               <div className="form-section">
-                <h3>Personal Information</h3>
-                <div>
-                  <label>Date Of Birth:</label>
-                  <input type="date" name="Date_Of_Birth" className="ifield"
-                    value={userdetil.Date_Of_Birth}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="form-section">
-                  <div>
-                    <label>Marital Status:</label>
-                    <select name="Marital_Status" className="ifield"
-                      value={userdetil.Marital_Status}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select Status</option>
-                      <option value="Single">Single</option>
-                      <option value="Married">Married</option>
-                      <option value="Divorced">Divorced</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label>How long have you lived at your current address?</label>
-                    <input type="text" name="addressDuration" className="ifield"
-                      placeholder="Enter duration in years"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-section">
-                  <h4>Bank Reference</h4>
-                  <div>
-                    <label>Bank Name:<span className="required">*</span></label>
-                    <input
-                      type="text" name="Bank_Name" className="ifield" placeholder="Enter Bank Name"
-                      value={userdetil.Bank_Name}
-                      onChange={handleChange}
-                    />
-                    {error.Bank_Name && <span className="error-message">{error.Bank_Name}</span>}
-                  </div>
-
-                  <div>
-                    <label>Account Number:<span className="required">*</span></label>
-                    <input type="text" name="Account_Number" className="ifield" placeholder="Enter Account Number"
-                      value={userdetil.Account_Number}
-                      onChange={handleChange}
-                    />
-                    {error.Account_Number && <span className="error-message">{error.Account_Number}</span>}
-                  </div>
-                </div>
-
-                <div className="form-section">
-                  <label>Upload Document:</label>
-                  <input type="file" name="Upload_Document" className="ifield" />
-                </div>
-
-                <button type="submit" className="submit-button">Submit Application</button>
+                <label>Upload Document:</label>
+                <input type="file" name="documents" className="ifield" />
               </div>
+
+              <button type="submit" className="loanaplbutton">Submit Application</button>
+
             </form>
           </div>
         </div>

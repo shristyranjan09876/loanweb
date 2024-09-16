@@ -1,12 +1,13 @@
 /* Container styling */
 .loan-container {
-    width: 1000px;
     margin: 10px ;
   padding: 0;
    
   }
   
-  /* Title styling */
+ .loan-table{
+  width: 173vh;
+ }
   .loan-title {
     text-align: center;
     font-size: 26px;
@@ -17,7 +18,6 @@
   
   /* Table styling */
   .loan-table {
-    width: 100%;
     border-collapse: collapse;
     font-size: 18px;
   }

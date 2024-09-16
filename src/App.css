@@ -1,17 +1,9 @@
-/* html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%; 
-    width: 100%;
-    overflow-x: hidden; 
-} */
+
 body {
     margin: 0;
     padding: 0;
     background-color: white;
     color: #9e9ea4;
-    /* background-color: #1d2634;
-    color: #9e9ea4; */
     font-family: 'Montserrat', sans-serif;
   }
   
@@ -36,7 +28,7 @@ body {
     cursor: pointer;
   }
   
-  .grid-container {
+  .grid-containermain {
     display: grid;
     grid-template-columns: 260px 1fr 1fr 1fr;
     grid-template-rows: 0.2fr 3fr;
@@ -120,11 +112,6 @@ body {
   .sidebar-responsive {
     display: inline !important;
     position: absolute;
-    /*
-      we want the z-index of the sidebar higher so that
-      the charts are not showing over the sidebar 
-      on small screens
-    */
     z-index: 12 !important;
   }
   
@@ -164,7 +151,7 @@ body {
   /* Main  */  
   .main-container {
     grid-area: main;
-    overflow-y: auto;
+    overflow-x: auto;
     padding: 20px 20px;
     color: rgba(255, 255, 255, 0.95);
   }
@@ -231,7 +218,7 @@ body {
   /* Medium <= 992px */
     
   @media screen and (max-width: 992px) {
-    .grid-container {
+    .grid-containermain {
       grid-template-columns: 1fr;
       grid-template-rows: 0.2fr 3fr;
       grid-template-areas:

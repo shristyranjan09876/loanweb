@@ -60,7 +60,8 @@ const Edituser = () => {
   };
 
   return (
-    <div className="add-store-container">
+    <div className="edit-user-container">
+    <div className='main-edituser'>
       <h1>Edit User</h1>
       <form onSubmit={handleSubmit}>
         <label>First Name:</label>
@@ -121,6 +122,7 @@ const Edituser = () => {
         <br />
         <button type="submit">Save Changes</button>
       </form>
+    </div>
     </div>
   );
 };

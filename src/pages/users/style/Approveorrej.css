@@ -1,0 +1,96 @@
+
+  .table-aprv{
+    width: 170%;
+padding-left: 20px;
+  }
+  .table-aprv th,
+.table-aprv td {
+  padding: 20px ; /* Adds padding inside table cells */
+  align-items: center;
+}
+
+.thead-dark th {
+  background-color: #343a40;
+  color: white;
+}
+.table-aprv tr {
+  border-bottom: 1px solid #ddd; /* Adds border between rows */
+}
+
+.table-aprv td {
+  vertical-align: middle; /* Aligns content in the middle vertically */
+}
+
+.d-flex.gap-2 {
+  gap: 10px; /* Adjusts the gap between buttons */
+}
+
+  .confirm-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+  }
+  
+  .cancel-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+  }
+  
+  @media (max-width: 767px) {
+    .table-container {
+      width: 220%;
+      overflow-x: auto;
+    }
+  }
+
+
+
+  .loan-status-dropdown{
+    width: 30%;
+    margin-bottom: 10px;
+  }
+  .loan-status-filter {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .loan-status-filter .btn {
+
+    margin: 0 10px;
+    border-radius: 30px; /* Rounded buttons */
+
+  }
+  
+  .loan-status-filter .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+  }
+  
+  .loan-status-filter .btn-primary:hover {
+    background-color: #0056b3;
+  }
+  
+  .loan-status-filter .btn-outline-primary {
+    background-color: transparent;
+    color: #007bff;
+    border: 2px solid #007bff;
+  }
+  
+  .loan-status-filter .btn-outline-primary:hover {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .loan-status-filter .btn:focus {
+    box-shadow: none;
+    outline: none;
+  }
+  
+  

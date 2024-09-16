@@ -4,6 +4,10 @@
 .adduser-container {
   padding: 20px;
   font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+  width: 150vh;
+  margin-top: 10px;
+  margin-left: 90px;
 }
 
 .adduser-title {
@@ -19,7 +23,7 @@
 
 /* Form container */
 .a {
-  width: 800px;
+
   margin: 0 ;
   padding: 20px;
 

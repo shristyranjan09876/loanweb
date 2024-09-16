@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './CompleteLoan.css'; 
+import '../../newpages/CompleteLoan.css'
 import axios from 'axios';
 import moment from 'moment';
 
@@ -22,9 +22,8 @@ const Newapply = () => {
             },
           }
         );
-        
-        console.log(response.data.loans);
         const loans = response.data.loans;
+        console.log(response.data.loans);
         setLoanRequests(Array.isArray(loans) ? loans : []); 
         setLoading(false); 
       } catch (error) {
@@ -53,6 +52,7 @@ const Newapply = () => {
           {loanRequests.map((application, index) => (
             <tr key={index} className={application.status === 'Pending' ? 'pending' : 'approved'}>
               <td>${application.amount}</td>
+              {/* <td>{application.appliedDate}</td> */}
               <td>{moment(application.appliedDate).format('MMM Do YY')}</td>
               <td>{application.purpose}</td>
               <td>{application.tenure}</td>

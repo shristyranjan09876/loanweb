@@ -1,62 +1,107 @@
-.add-store-container {
-    width: 100%;
-    margin: 0 auto;
-    padding: 35px;
-   
-    font-family: Arial, sans-serif;
+.edit-user-container{
+width: 150vh;
+margin: 2px;
+padding: 2rem;
+margin-left: 100px;
+
+}
+
+.main-edituser{
+justify-items: center;
+align-items: center;
+}
+.edit-user-container h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.edit-user-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-user-container label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #555;
+}
+
+.edit-user-container input {
+  padding: 0.75rem;
+
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.edit-user-container input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.edit-user-container button {
+  padding: 0.75rem;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.edit-user-container button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Styles */
+@media (width: 768px) {
+  .edit-user-container {
+    padding: 1.5rem;
+    margin: 1.5rem;
   }
-  
-  /* Form elements styling */
-  .add-store-container h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
+
+  .edit-user-container h1 {
+    font-size: 1.5rem;
   }
-  
-  .add-store-container form {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+
+  .edit-user-container label {
+    font-size: 0.9rem;
   }
-  
-  .add-store-container label {
-    font-size: 16px;
-    color: #333;
+
+  .edit-user-container input {
+    padding: 0.65rem;
+    font-size: 0.9rem;
   }
-  
-  .add-store-container input[type="text"],
-  .add-store-container input[type="tel"],
-  .add-store-container input[type="date"],
-  .add-store-container input[type="number"],
-  .add-store-container input[type="email"] {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-    width: 100%;
+
+  .edit-user-container button {
+    padding: 0.65rem;
+    font-size: 0.9rem;
   }
-  
-  .add-store-container input[type="text"]:focus,
-  .add-store-container input[type="tel"]:focus,
-  .add-store-container input[type="email"]:focus {
-    border-color: #1a73e8;
-    outline: none;
+}
+
+@media (width: 480px) {
+  .edit-user-container {
+    padding: 1rem;
+    margin: 1rem;
   }
-  
-  .add-store-container button[type="submit"] {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    background-color: #1a73e8;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+
+  .edit-user-container h1 {
+    font-size: 1.3rem;
   }
-  
-  .add-store-container button[type="submit"]:hover {
-    background-color: #155ab2;
+
+  .edit-user-container input {
+    padding: 0.6rem;
+    font-size: 0.85rem;
   }
-  .error{
-    color: red;
+
+  .edit-user-container button {
+    padding: 0.6rem;
+    font-size: 0.85rem;
   }
+}

@@ -130,7 +130,7 @@ const Adduser = () => {
     <>
       <main className='adduser-container'>
         <div className='adduser-title'>
-          <h3>ADD USER</h3>
+          <h3>Add Employee</h3>
         </div>
         <div className="a">
           <div className="b">

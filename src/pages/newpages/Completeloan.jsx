@@ -1,33 +1,72 @@
-import React from 'react';
-import './CompleteLoan.css'; 
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import moment from 'moment';
 
 const CompleteLoan = () => {
-  const completeLoans = [
-    { amount: '50000', disbursementDate: '2023-01-01', closeDate: '2023-12-01' },
-    { amount: '30000', disbursementDate: '2023-02-15', closeDate: '2024-02-15' }
-  ];
+  const [loanStatus] = useState('completed'); 
+  const [loanRequests, setLoanRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(''); 
+
+  useEffect(() => {
+    const fetchLoanHistory = async () => {
+      try {
+        setLoading(true); 
+        const response = await axios.get(
+          `http://localhost:3000/api/loans/history?loanStatus=${loanStatus}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-access-token': localStorage.getItem('token'),
+            },
+          }
+        );
+        const loans = response.data.loans;
+        setLoanRequests(Array.isArray(loans) ? loans : []); 
+        setLoading(false); 
+      } catch (error) {
+        setError('Failed to load loan requests');
+        setLoading(false); 
+      }
+    };
+
+    fetchLoanHistory();
+  }, [loanStatus]);
 
   return (
     <div className="loan-container">
       <h2 className="loan-title">Complete Loans</h2>
-      <table className="loan-table">
-        <thead>
-          <tr>
-            <th>Loan Amount</th>
-            <th>Disbursement Date</th>
-            <th>Close Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {completeLoans.map((loan, index) => (
-            <tr key={index} className="loan-row">
-              <td>${loan.amount}</td>
-              <td>{loan.disbursementDate}</td>
-              <td>{loan.closeDate}</td>
+
+      {loading ? (
+        <p>Loading loan data...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : loanRequests.length === 0 ? (
+        <p>No complete loan records available.</p>
+      ) : (
+        <table className="loan-table">
+          <thead>
+            <tr>
+              <th>Loan Amount</th>
+              <th>Applied Date</th>
+              <th>Purpose</th>
+              <th>Tenure</th>
+              <th>Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {loanRequests.map((loan, index) => (
+              <tr key={index} className="loan-row">
+                <td>${loan.amount}</td>
+                <td>{moment(loan.appliedDate).format('MMM Do YY')}</td>
+                <td>{loan.purpose || 'N/A'}</td>
+                <td>{loan.tenure || 'N/A'}</td> 
+                <td>{loan.status || 'N/A'}</td> 
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };

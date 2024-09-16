@@ -1,14 +1,12 @@
 .listcontainer {
-  margin: 20px;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 10px;
+  padding: 0px;
+ 
 }
 
 /* Table styles */
 .user-table {
-  width: 100%;
+  width: 130%;
   border-collapse: collapse;
   margin-bottom: 20px;
 }
@@ -33,7 +31,7 @@
 }
 
 /* Table actions buttons */
-.table-actions {
+.modal-actions {
   display: flex;
   gap: 8px;
 }
@@ -89,7 +87,7 @@
   font-size: 18px;
 }
 
-.confirm-button, .cancel-button {
+.con-button, .cancel-button {
   padding: 10px 20px;
   border: none;
   border-radius: 4px;
@@ -98,7 +96,7 @@
   margin: 0 10px;
 }
 
-.confirm-button {
+.con-button {
   background-color: #28a745; /* Green */
   color: #fff;
 }
@@ -108,7 +106,7 @@
   color: #fff;
 }
 
-.confirm-button:hover {
+.con-button:hover {
   background-color: #218838;
 }
 

@@ -20,6 +20,9 @@ import Pendingloan from './pages/newpages/Pendingloan';
 import ProfilePage from './pages/users/ProfilePage';
 import EditProfilePage from './pages/users/Editprofile';
 import Approveorrej from './pages/users/Approveorrej';
+import Admincmpltloan from './pages/newpages/Loanhistorybyadmin/admincmpltloan';
+import Adminpendingloan from './pages/newpages/Loanhistorybyadmin/adminpendingloan';
+import Adminewapply from './pages/newpages/Loanhistorybyadmin/Adminewapply';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -44,7 +47,7 @@ function App() {
   return (
     <>
       {isAuthenticated ? (
-        <div className="grid-container">
+        <div className="grid-containermain">
           <BrowserRouter>
             <Header OpenSidebar={OpenSidebar} setIsAuthenticated={setIsAuthenticated} />
             <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
@@ -54,12 +57,19 @@ function App() {
               <Route path="/adduser" element={<ProtectedRoute><Adduser /></ProtectedRoute>} />
               <Route path="/loanapplic" element={<ProtectedRoute><Loanapplic /></ProtectedRoute>} />
               <Route path="/edituser/:id" element={<ProtectedRoute><Edituser /></ProtectedRoute>} />
+               {/* loan history by employee */}
               <Route path="/newapply" element={<ProtectedRoute><Newapply /></ProtectedRoute>} />
               <Route path="/pendingloan" element={<ProtectedRoute><Pendingloan /></ProtectedRoute>} />
               <Route path="/completeLoan" element={<ProtectedRoute><CompleteLoan /></ProtectedRoute>} />
+              {/* *****end***** */}
               <Route  path="/profilePage"  element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} /> {/* Fixed path */}
               <Route  path="/editProfilePage"  element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} /> 
               <Route  path="/approveorrej"  element={<ProtectedRoute><Approveorrej/></ProtectedRoute>} />
+              {/* loan history by admin */}
+              <Route path="/admincmpltloan" element={<ProtectedRoute><Admincmpltloan /></ProtectedRoute>} />
+              <Route path="/adminewapply" element={<ProtectedRoute><Adminewapply /></ProtectedRoute>}/>
+              <Route path="/adminpendingloan" element={<ProtectedRoute><Adminpendingloan /></ProtectedRoute>}/>
+                {/* *****end***** */}
             </Routes>
           </BrowserRouter>
         </div>

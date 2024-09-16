@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import './style/ProfilePage.css'
+import moment from 'moment';
 
 const ProfilePage = () => {
   const { id } = useParams(); 
@@ -55,46 +56,40 @@ const ProfilePage = () => {
   if (error) return <div className="text-center text-danger">Error: {error}</div>;
 
   return (
-    <div className="container mt-5 profile-page">
-      <div className="row">
-        <div className="col-md-8 mx-auto">
-          <div className="profile-card p-4 rounded shadow-sm">
-            <h2 className="text-center mb-4">User Profile</h2>
-            <div className="form-group mb-3">
-              <label className="font-weight-bold"> Name:</label>
-              <p>{userProfile.firstName} {userProfile.lastName}</p>
-            </div>
-            {/* <div className="form-group mb-3">
-              <label className="font-weight-bold">Last Name:</label>
-              <p>{userProfile.lastName}</p>
-            </div> */}
-            <div className="form-group mb-3">
-              <label className="font-weight-bold">Date of Birth:</label>
-              <p>{userProfile.dateOfBirth}</p>
-            </div>
-            <div className="form-group mb-3">
-              <label className="font-weight-bold">Department:</label>
-              <p>{userProfile.department}</p>
-            </div>
-            <div className="form-group mb-3">
-              <label className="font-weight-bold">Position:</label>
-              <p>{userProfile.position}</p>
-            </div>
-            <div className="form-group mb-3">
-              <label className="font-weight-bold">Salary:</label>
-              <p>{userProfile.salary}</p>
-            </div>
-            <div className="form-group mb-4">
-              <label className="font-weight-bold">Join Date:</label>
-              <p>{userProfile.joinDate}</p>
-            </div>
-            <div className="text-center">
-              <Link to="/editProfilePage" className="btn btn-primary btn-lg">Edit Profile</Link>
-            </div>
-          </div>
-        </div>
+    <div className="profile-page">
+    <div className="profile-card">
+      <h2 style={{textAlign:"center"}}>User Profile</h2>
+      <div className="profile-info">
+        <label>Name:</label>
+        <p>{userProfile.firstName} {userProfile.lastName}</p>
+      </div>
+      <div className="profile-info">
+        <label>Date of Birth:</label>
+        <p>{moment(userProfile.dateOfBirth).format('MMM Do YY')}</p>
+        {/* <p>{userProfile.dateOfBirth}</p> */}
+      </div>
+      <div className="profile-info">
+        <label>Department:</label>
+        <p>{userProfile.department}</p>
+      </div>
+      <div className="profile-info">
+        <label>Position:</label>
+        <p>{userProfile.position}</p>
+      </div>
+      <div className="profile-info">
+        <label>Salary:</label>
+        <p>{userProfile.salary}</p>
+      </div>
+      <div className="profile-info">
+        <label>Join Date:</label>
+        <p>{moment(userProfile.joinDate).format('MMM Do YY')}</p>
+        {/* <p>{userProfile.joinDate}</p> */}
+      </div>
+      <div className="button-container">
+        <Link to="/editProfilePage" className="edit-button">Edit Profile</Link>
       </div>
     </div>
+  </div>
   );
 };
 

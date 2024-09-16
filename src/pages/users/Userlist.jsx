@@ -60,7 +60,7 @@ const UserList = () => {
   return (
     <>
       <div className="listcontainer">
-        <h1>User List</h1>
+        {/* <h1>Employee List</h1> */}
         <table className="user-table">
           <thead>
             <tr>
@@ -72,7 +72,7 @@ const UserList = () => {
               <th>Salary</th>
               <th>Join Date</th>
               <th>Email</th>
-              <th>Edit/Delelte</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -88,7 +88,7 @@ const UserList = () => {
                   <td>{moment(user.joinDate).format('MMM Do YY')}</td>
                   <td>{user.userDetails.email}</td>
                  
-                  <td className="table-actions">
+                  <td className="modal-actions">
                     <button onClick={() => handleEdit(user._id)} className="edit-button">Edit</button>
                     <button onClick={() => confirmDelete(user._id)} className="delete-button">Delete</button>
                   </td>
@@ -106,7 +106,7 @@ const UserList = () => {
           <div className="modall">
             <div className="modalcontent">
               <h2>Are you sure you want to delete this user?</h2>
-              <button onClick={handleDelete} className="confirm-button">Delete</button>
+              <button onClick={handleDelete} className="con-button">Delete</button>
               <button onClick={handleCancel} className="cancel-button">Cancel</button>
             </div>
           </div>

@@ -1,11 +1,10 @@
-import axios from 'axios'; // Add missing axios import
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import './CompleteLoan.css'; 
+import '../../newpages/CompleteLoan.css'
 import moment from 'moment';
 
-const Pendingloan = () => {
-  const [loanStatus] = useState('pending'); 
+const CompleteLoan = () => {
+  const [loanStatus] = useState('completed'); 
   const [loanRequests, setLoanRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(''); 
@@ -28,7 +27,7 @@ const Pendingloan = () => {
         setLoanRequests(Array.isArray(loans) ? loans : []); 
         setLoading(false); 
       } catch (error) {
-        setError('Failed to load loan details');
+        setError('Failed to load loan requests');
         setLoading(false); 
       }
     };
@@ -38,15 +37,15 @@ const Pendingloan = () => {
 
   return (
     <div className="loan-container">
-      <h2 className="loan-title">Pending Loans</h2>
+      <h2 className="loan-title">Complete Loans</h2>
 
-      {/* {loading ? (
-        <p>Loading pending loans...</p>
+      {loading ? (
+        <p>Loading loan data...</p>
       ) : error ? (
         <p>{error}</p>
       ) : loanRequests.length === 0 ? (
-        <p>No pending loans available.</p>
-      ) : ( */}
+        <p>No complete loan records available.</p>
+      ) : (
         <table className="loan-table">
           <thead>
             <tr>
@@ -55,26 +54,23 @@ const Pendingloan = () => {
               <th>Purpose</th>
               <th>Tenure</th>
               <th>Status</th>
-              <th>View</th>
             </tr>
           </thead>
           <tbody>
             {loanRequests.map((loan, index) => (
               <tr key={index} className="loan-row">
                 <td>${loan.amount}</td>
-                {/* <td>{loan.appliedDate}</td> */}
                 <td>{moment(loan.appliedDate).format('MMM Do YY')}</td>
                 <td>{loan.purpose || 'N/A'}</td>
                 <td>{loan.tenure || 'N/A'}</td> 
                 <td>{loan.status || 'N/A'}</td> 
-                <td><Link to="">View</Link></td>
               </tr>
             ))}
           </tbody>
         </table>
-      {/* )} */}
+      )}
     </div>
   );
 };
 
-export default Pendingloan;
+export default CompleteLoan;

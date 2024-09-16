@@ -9,8 +9,8 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar }) => {
 
   const adminLinks = [
     { to: "/dashboard", icon: <BsGrid1X2Fill />, label: "Home" },
-    { to: "/active-loans", icon: <BsFillArchiveFill />, label: "Active Loans" },
-    { to: "/payments-today", icon: <BsFillGrid3X3GapFill />, label: "Payments Today" },
+    // { to: "/active-loans", icon: <BsFillArchiveFill />, label: "Active Loans" },
+    // { to: "/payments-today", icon: <BsFillGrid3X3GapFill />, label: "Payments Today" },
     { to: "/approveorrej", icon: <BsPeopleFill />, label: "Loan Request" },
     { to: "/loan-types", icon: <BsMenuButtonWideFill />, label: "Loan Types" },
     { to: "/adduser", icon: <AccountCircleIcon />, label: "Add Employee" },
@@ -63,7 +63,26 @@ const Sidebar = ({ openSidebarToggle, OpenSidebar }) => {
             </DropdownButton>
           </li>
         )}
-      </ul>
+        
+      
+      {role === 'admin' && (
+          <li className='sidebar-list-drop'>
+            <DropdownButton 
+              id="dropdown-loan-history" 
+              variant="light" 
+              title={
+                <>
+                  <BsFillArchiveFill style={{ marginRight: '8px' }} /> 
+                  Loan History
+                </>
+              }>
+              <Dropdown.Item as={NavLink} to="/admincmpltloan">Complete Loan</Dropdown.Item>
+              <Dropdown.Item as={NavLink} to="/adminpendingloan">Pending Loan</Dropdown.Item>
+              <Dropdown.Item as={NavLink} to="/adminewapply">New Apply</Dropdown.Item>
+            </DropdownButton>
+          </li>
+        )}
+        </ul>
     </aside>
   );
 };

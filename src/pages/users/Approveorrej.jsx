@@ -1,74 +1,166 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; 
+import axios from 'axios';
+import './style/Approveorrej.css';
 
 const Approveorrej = () => {
+  const [loanRequests, setLoanRequests] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedLoanId, setSelectedLoanId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loanStatus, setLoanStatus] = useState('pending'); 
   
-  const loanRequests = [
-    {
-      id: 1,
-      employeeName: 'Shri',
-      previousLoan: '$5,0000',
-      loanAmount: '$10,0000',
-      employeeEmail: 'shri@example.com',
-      tenure: '12 months',
-    },
-    {
-      id: 2,
-      employeeName: 'ranjan',
-      previousLoan: '$2,0000',
-      loanAmount: '$5,0000',
-      employeeEmail: 'ranjan@example.com',
-      tenure: '6 months',
-    },
-  ];
+  useEffect(() => {
+    const fetchLoanRequests = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:3000/api/admin/loans?loanstatus=${loanStatus}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-access-token': localStorage.getItem('token'),
+          },
+        });
+        const loans = response.data.loans;
+        setLoanRequests(Array.isArray(loans) ? loans : []);
+        setLoading(false);
+      } catch (error) {
+        setError('Failed to load loan requests');
+        setLoading(false);
+      }
+    };
+  
+    fetchLoanRequests();
+  }, [loanStatus]);
 
-  const handleApprove = (id) => {
-    alert(`Loan request ${id} approved`);
+  const handleOpenModal = (id) => {
+    setSelectedLoanId(id);
+    setShowModal(true);
   };
 
-  const handleReject = (id) => {
-    alert(`Loan request ${id} rejected`);
+  const handleApprove = async () => {
+    if (!selectedLoanId) return;
+    try {
+      setLoading(true);
+      await axios.get(`http://localhost:3000/api/admin/loans/approve/${selectedLoanId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-access-token': localStorage.getItem('token'),
+        },
+      });
+      setSuccess('Loan approved successfully');
+      setLoanRequests(loanRequests.filter((loan) => loan._id !== selectedLoanId)); 
+      setLoading(false);
+      setShowModal(false);
+    } catch (error) {
+      setError('Failed to approve the loan');
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async (_id) => {
+    try {
+      setLoading(true);
+      await axios.put(`http://localhost:3000/api/admin/loans/reject/${_id}`, {}, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-access-token': localStorage.getItem('token'),
+        },
+      });
+      setSuccess('Loan rejected successfully');
+      setLoanRequests(loanRequests.filter((loan) => loan._id !== _id)); 
+      setLoading(false);
+    } catch (error) {
+      setError('Failed to reject the loan');
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setShowModal(false);
   };
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Loan Requests</h2>
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th>Employee Name</th>
-            <th>Previous Loan</th>
-            <th>Loan Amount</th>
-            <th>Employee Email</th>
-            <th>Tenure</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loanRequests.map((loan) => (
-            <tr key={loan.id}>
-              <td>{loan.employeeName}</td>
-              <td>{loan.previousLoan}</td>
-              <td>{loan.loanAmount}</td>
-              <td>{loan.employeeEmail}</td>
-              <td>{loan.tenure}</td>
-              <td>
-                <button
-                  className="btn btn-success btn-sm me-2"
-                  onClick={() => handleApprove(loan.id)}
-                >
-                  Approve
-                </button>
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={() => handleReject(loan.id)}
-                >
-                  Reject
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="container-fluid mt-5">
+      {/* Loan Status Dropdown */}
+      <div className="loan-status-dropdown">
+        <label htmlFor="loanStatus" className="form-label">Filter by Loan Status:</label>
+        <select 
+          id="loanStatus" 
+          className="form-select" 
+          value={loanStatus} 
+          onChange={(e) => setLoanStatus(e.target.value)}
+        >
+          <option value="pending">Pending Loans</option>
+          <option value="approved">Approved Loans</option>
+          <option value="rejected">Rejected Loans</option>
+          <option value="completed">Completed Loans</option>
+        </select>
+      </div>
+
+      {loading ? (
+        <p>Loading loan requests...</p>
+      ) : (
+        loanRequests.length === 0 ? <p>No loan requests available</p> : (
+          <div className="table-container">
+            <table className="table-aprv table-bordered ">
+              <thead className="thead-dark ">
+                <tr>
+                  <th>Amount</th>
+                  <th>Purpose</th>
+                  <th>Status</th>
+                  <th>Employee Salary</th>
+                  <th>Tenure</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loanRequests.map((loan , index) => (
+                  <tr key={index}>
+                    <td>{loan.amount}</td>
+                    <td>{loan.purpose}</td>
+                    <td>{loan.status}</td>
+                    <td>{loan.employeeDetails.salary}</td>
+                    <td>{loan.tenure}</td>
+                    <td>
+                      {loan.status === 'pending' && (
+                        <div className="d-flex gap-2">
+                          <button
+                            className="btn btn-success btn-sm"
+                            onClick={() => handleOpenModal(loan._id)}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleReject(loan._id)}
+                            disabled={loading}
+                          >
+                            {loading ? 'Rejecting...' : 'Reject'}
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      )}
+
+      {/* Modal for approval confirmation */}
+      {showModal && (
+        <div className="modall">
+          <div className="modalcontent">
+            <h2>Are you sure you want to approve the loan?</h2>
+            <button onClick={handleApprove} className="con-button" disabled={loading}>
+              {loading ? 'Approving...' : 'Yes'}
+            </button>
+            <button onClick={handleCancel} className="cancel-button">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

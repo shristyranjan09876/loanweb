@@ -93,8 +93,8 @@ const EditProfilePage = () => {
   return (
     <div className="container mt-5 edit-profile-page">
       <div className="row">
-        <div className="col-md-8 mx-auto">
-          <div className="edit-profile-card p-4 rounded shadow-sm">
+        <div className="col-md-12 ">
+          <div className="edit-profile-card ">
             <h2 className="text-center mb-4">Edit Profile</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group mb-3">
