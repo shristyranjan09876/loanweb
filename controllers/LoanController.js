@@ -2,8 +2,14 @@ const Loan = require('../models/Loan');
 const Employee = require('../models/Employee');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
-
+const dotenv = require('dotenv');
+const Interest = require('../models/InterestRate'); // Ensure this path is correct
+dotenv.config(); 
 // Apply for Loan
+
+
+
+
 exports.applyForLoan = async (req, res) => {
     console.log('--- Start of applyForLoan function ---');
     try {
@@ -14,7 +20,7 @@ exports.applyForLoan = async (req, res) => {
 
         const userId = req.user._id;
         const { amount, purpose, requestedRepaymentPeriod, tenure } = req.body;
-                                                                            
+
         if (!amount || !purpose || !requestedRepaymentPeriod || !tenure) {
             console.log('Invalid request: Missing fields');
             return res.status(400).json({ error: 'All fields are mandatory: amount, purpose, requestedRepaymentPeriod, and tenure' });
@@ -27,6 +33,16 @@ exports.applyForLoan = async (req, res) => {
             return res.status(404).json({ error: 'Employee not found' });
         }
 
+        console.log('Finding current interest rate');
+        const interest = await Interest.findOne();
+        if (!interest) {
+            console.log('Interest rate not found');
+            return res.status(404).json({ error: 'Interest rate not found' });
+        }
+
+        const interestRate = interest.interestRate;
+        console.log('Interest rate retrieved:', interestRate);
+
         console.log('Checking for pending loans for employee:', employee._id);
         const pendingLoans = await Loan.find({ employee: employee._id, status: 'pending' });
         const pendingAmount = pendingLoans.reduce((sum, loan) => sum + loan.amount, 0);
@@ -37,20 +53,34 @@ exports.applyForLoan = async (req, res) => {
             return res.status(400).json({ error: `Loan amount exceeds the limit of ${maxLoanAmount}` });
         }
 
-        console.log('Creating repayment schedule for amount:', amount, 'Requested period:', requestedRepaymentPeriod);
+        // Calculate the total interest using the annual interest rate
+        console.log('Calculating annual interest for amount:', amount);
+
+        const annualInterestRate = Number(interestRate) / 100;  // Annual interest rate as a percentage
+
+        // Total interest for the entire tenure (simple interest formula)
+        const totalInterest = Number(amount) * annualInterestRate * (tenure / 12);  // Convert tenure to years
+
+        // Calculate monthly repayments with interest
+        const totalRepaymentAmount = Number(amount) + totalInterest;  // Principal + total interest
+        const monthlyRepayment = (totalRepaymentAmount / requestedRepaymentPeriod).toFixed(2);  // Use requestedRepaymentPeriod for calculation
+
         const repaymentSchedule = [];
         for (let i = 1; i <= requestedRepaymentPeriod; i++) {
             const dueDate = new Date();
             dueDate.setMonth(dueDate.getMonth() + i);
+
             repaymentSchedule.push({
                 dueDate,
-                amount: (Number(amount) / requestedRepaymentPeriod).toFixed(2),
+                amount: monthlyRepayment,
+                interest: (totalInterest / requestedRepaymentPeriod).toFixed(2),  // Split total interest equally across all months
+                principal: (Number(amount) / requestedRepaymentPeriod).toFixed(2),
                 status: 'pending'
             });
         }
 
         // Handle file uploads
-        const documents = req.files.map(file => file.path);
+        const documents = req.files ? req.files.map(file => file.path) : []; // Check if req.files exists
 
         console.log('Creating new loan document with documents:', documents);
         const newLoan = new Loan({
@@ -59,24 +89,33 @@ exports.applyForLoan = async (req, res) => {
             purpose,
             requestedRepaymentPeriod,
             tenure,
+            interestRate,
+            interestAmount: totalInterest.toFixed(2),  // Total interest based on annual rate
+            outstandingAmount: totalRepaymentAmount.toFixed(2),  // Principal + total interest
             status: 'pending',
             repaymentSchedule,
-            documents // Add documents array
+            documents
         });
 
         await newLoan.save();
 
         console.log('Loan application submitted successfully:', newLoan);
+        
+        // Respond with loan details
         return res.status(201).json({
             message: 'Loan application submitted successfully',
             loan: newLoan,
-            status:200
+            totalInterest: totalInterest.toFixed(2),  // Total interest displayed
+            outstandingAmount: totalRepaymentAmount.toFixed(2),  // Total payable amount
+            status: 201
         });
     } catch (error) {
         console.error('Loan application error:', error);
         return res.status(500).json({ error: error.message });
     }
 };
+
+
 
 
 exports.loanHistory = async (req, res) => {
@@ -264,63 +303,74 @@ exports.rejectLoan = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
-// Submit EMI and mark it as paid
+
 exports.submitEMI = async (req, res) => {
-    console.log('--- Start of submitEMI function ---');
+    console.log('--- Start of submitPayment function ---');
     try {
-        if (!req.user) {
-            console.log('Authentication required: User not authenticated');
-            return res.status(401).json({ error: 'Authentication required' });
+        const loanId = req.params.loanId;  // Access the loanId parameter
+        const { repaymentDate, paidAmount } = req.body;  // Repayment details from request body
+
+        // Log the extracted values
+        console.log('Received repayment request:');
+        console.log('Loan ID:', loanId);
+        console.log('Repayment Date:', repaymentDate);
+        console.log('Paid Amount:', paidAmount);
+
+        // Validate input
+        if (!repaymentDate || !paidAmount) {
+            return res.status(400).json({ error: 'Repayment date and paid amount are required' });
         }
 
-        const { loanId } = req.params;
-        const { repaymentDate } = req.body; // Extract repayment date from the body
-
-        console.log('Finding loan by loanId:', loanId);
+        // Find the loan by ID
         const loan = await Loan.findById(loanId);
+        
+        // Log the result of the loan query
         if (!loan) {
-            console.log('Loan not found:', loanId);
+            console.log('Loan not found for loanId:', loanId);
             return res.status(404).json({ error: 'Loan not found' });
         }
 
-        // Parse the repayment date
-        const repaymentDateObj = new Date(repaymentDate);
-        if (isNaN(repaymentDateObj.getTime())) {
-            console.log('Invalid repayment date provided:', repaymentDate);
-            return res.status(400).json({ error: 'Invalid repayment date' });
-        }
+        // Update the repayment schedule
+        let totalOverdueAmount = 0;
+        loan.repaymentSchedule = loan.repaymentSchedule.map((installment) => {
+            if (installment.dueDate.toISOString().slice(0, 10) === repaymentDate) {
+                const remainingAmount = Number(installment.amount) - paidAmount;
 
-        // Find the repayment entry by matching the date
-        const repayment = loan.repaymentSchedule.find(entry => {
-            const dueDateObj = new Date(entry.dueDate); // Assuming dueDate is stored in the repayment schedule
-            return dueDateObj.toDateString() === repaymentDateObj.toDateString(); // Compare only the date, not time
+                if (remainingAmount > 0) {
+                    // Update the status to 'partially paid'
+                    installment.status = 'partially paid';
+                    installment.amount = installment.amount.toFixed(2);
+                    installment.pendingAmount=remainingAmount.toFixed(2);
+                } else {
+                    // Update the status to 'paid'
+                    installment.status = 'paid';
+                    installment.pendingAmount = '0.00';
+                    
+                }
+                installment.paidAmount = paidAmount.toFixed(2); // Track the paid amount
+            }
+            // Calculate overdue amounts
+            if (installment.status === 'partially paid') {
+                totalOverdueAmount += Number(installment.pendingAmount);
+            }
+            return installment;
         });
 
-        if (!repayment) {
-            console.log('Repayment not found for the given date:', repaymentDate);
-            return res.status(404).json({ error: 'Repayment entry not found for the given date' });
-        }
-
-        // Update the repayment status to 'paid'
-        repayment.status = 'paid';
-
-        // Check if all repayments are paid
-        const allPaid = loan.repaymentSchedule.every(entry => entry.status === 'paid');
-        if (allPaid) {
-            loan.status = 'completed';
-            loan.closeDate = new Date(); // Set the close date to now
-        }
+        // Update the loan document with new repayment schedule and total overdue amount
+        loan.totalOverdueAmount = totalOverdueAmount.toFixed(2);  // Track the total overdue amount
 
         await loan.save();
 
-        console.log('EMI submitted successfully:', loan);
+        console.log('Repayment processed successfully:', loan);
+
         return res.status(200).json({
-            message: 'EMI submitted successfully',
+            message: 'Repayment submitted successfully',
             loan,
+            totalOverdueAmount,
             status: 200
         });
     } catch (error) {
-        console.error('EMI submission error:', error);
+        console.error('Error processing repayment:', error);
         return res.status(500).json({ error: error.message });
     }
 };
@@ -329,7 +379,13 @@ exports.submitEMI = async (req, res) => {
 
 
 
-// Create a reusable transporter object using SMTP transport
+
+
+
+
+
+
+
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
@@ -340,6 +396,10 @@ const transporter = nodemailer.createTransport({
 
 // Function to send email notification
 const sendEmail = async (email, loanId) => {
+    console.log('Attempting to send email');
+    console.log('Email Username:', process.env.EMAIL_USERNAME);
+    console.log('Email Password:', process.env.EMAIL_PASSWORD ? 'Set' : 'Not Set');
+
     const mailOptions = {
         from: process.env.EMAIL_USERNAME,
         to: email,
@@ -348,184 +408,60 @@ const sendEmail = async (email, loanId) => {
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully');
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully:', info.response);
     } catch (error) {
         console.error('Error sending email: ', error);
     }
 };
-
-// Controller to handle loan status updates
+// Controller to handle loan status update
 exports.updateLoanStatus = async (req, res) => {
-    const loanId = req.params.id;
-    const { status } = req.body;
-
+    console.log('--- Start of updateLoanStatus function ---');
     try {
-        const loan = await Loan.findById(loanId);
+        const loanId = req.params.id;
+        const { status } = req.body;
 
-        if (!loan) {
-            return res.status(404).json({ message: 'Loan not found' });
+        // Validate admin authentication
+        if (!req.user || req.user.role !== 'admin') {
+            console.log('Admin access required: User not authorized');
+            return res.status(403).json({ error: 'Admin access required' });
         }
 
-        loan.status = status;
+        console.log('Finding loan by loanId:', loanId);
+        const loan = await Loan.findById(loanId);
+        if (!loan) {
+            console.log('Loan not found:', loanId);
+            return res.status(404).json({ error: 'Loan not found' });
+        }
 
-        // If the status is closed, send the email notification
-        if (status === 'closed') {
+        // Update loan status if it's valid (approved, rejected, completed, etc.)
+        loan.status = status;
+        if (status === 'completed') {
+            loan.closeDate = new Date(); // Set the close date for completed loans
+        }
+
+        await loan.save();
+
+        console.log('Loan status updated successfully:', loan);
+
+        // If the loan is completed, send an email to the user
+        if (status === 'completed') {
+            console.log('Loan marked as completed. Sending email notification...');
             const employee = await Employee.findById(loan.employee);
-            if (employee) {
-                const user = await User.findById(employee.user);
-                if (user && user.email) {
-                    await sendEmail(user.email, loanId);
-                }
+            if (!employee) {
+                console.log('Employee not found for loan:', loanId);
+                return res.status(404).json({ error: 'Employee not found' });
+            }
+            
+            const user = await User.findById(employee.user);
+            if (user) {
+                await sendEmail(user.email, loanId);
             }
         }
 
-        // Save the updated loan
-        await loan.save();
-
-        // Return success response
-        return res.status(200).json({ message: 'Loan status updated successfully', status: 200 });
+        return res.status(200).json({ message: 'Loan status updated successfully', loan, status: 200 });
     } catch (error) {
-        console.error('Error updating loan status: ', error);
-        return res.status(500).json({ message: 'Server error' });
+        console.error('Error updating loan status:', error);
+        return res.status(500).json({ error: error.message });
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Get employee details along with their loans
-// exports.getEmployeeDetails = async (req, res) => {
-//     console.log('--- Start of getEmployeeDetails function ---');
-//     try {
-//         if (!req.user || req.user.role !== 'admin') {
-//             console.log('Admin access required: User not authorized');
-//             return res.status(403).json({ error: 'Admin access required' });
-//         }
-
-//         const { employeeId } = req.params;
-
-//         console.log('Finding employee by employeeId:', employeeId);
-//         const employee = await Employee.findById(employeeId);
-//         if (!employee) {
-//             console.log('Employee not found for employeeId:', employeeId);
-//             return res.status(404).json({ error: 'Employee not found' });
-//         }
-
-//         console.log('Aggregating loans for employee:', employeeId);
-//         // Aggregate loans for the specific employee with details
-//         const loans = await Loan.aggregate([
-//             {
-//                 $match: { employee: mongoose.Types.ObjectId(employeeId) }
-//             },
-//             {
-//                 $lookup: {
-//                     from: 'employees', // The name of the Employee collection
-//                     localField: 'employee',
-//                     foreignField: '_id',
-//                     as: 'employeeDetails'
-//                 }
-//             },
-//             {
-//                 $unwind: {
-//                     path: '$employeeDetails',
-//                     preserveNullAndEmptyArrays: true
-//                 }
-//             }
-//         ]);
-
-//         console.log('Employee details and loans fetched successfully:', { employee, loans });
-//         res.status(200).json({
-//             employee,
-//             loans
-//         });
-//     } catch (error) {
-//         console.error('Error fetching employee details:', error);
-//         res.status(500).json({ error: 'An error occurred while fetching employee details. Please try again later.' });
-//     }
-// };
-
-

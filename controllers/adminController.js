@@ -1,10 +1,14 @@
 const User = require('../models/User');
 const Employee = require('../models/Employee');
+
+const Interest = require('../models/InterestRate');
+
 const bcrypt = require('bcryptjs');
 const { check, validationResult } = require('express-validator');
 const { v4: uuidv4 } = require('uuid');
 const mongoose=require('mongoose')
 const adminUser=require('../services/admin')
+
 // Create an employee
 exports.createEmployee = [
   // Validation checks
@@ -208,4 +212,29 @@ exports.getEmployeeProfile = async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+};
+
+
+
+
+// Create a new interest rate
+exports.createInterest = async (req, res) => {
+    try {
+        const { interestRate } = req.body;
+        const newInterest = new Interest({ interestRate });
+        const savedInterest = await newInterest.save();
+        res.status(201).json(savedInterest);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Get all interest rates
+exports.getAllInterests = async (req, res) => {
+    try {
+        const interests = await Interest.find();
+        res.status(200).json(interests);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 };

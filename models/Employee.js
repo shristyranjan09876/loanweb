@@ -16,6 +16,7 @@ const employeeSchema = new mongoose.Schema({
     unique: true,
     default: uuidv4,
   },
+  interestRate: { type: Number, default: 8 },
 });
 
 module.exports = mongoose.model('Employee', employeeSchema);

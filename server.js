@@ -8,7 +8,8 @@ const helmet = require('helmet');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
-const loanRoutes=require('./routes/loanRoutes')
+const loanRoutes=require('./routes/loanRoutes');
+
 dotenv.config();
 
 const app = express();

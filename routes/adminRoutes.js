@@ -9,5 +9,9 @@ router.put('/employees/:_id', authenticate, authorizeAdmin, adminController.upda
 router.delete('/employees/:_id', authenticate, authorizeAdmin, adminController.deleteEmployee);
 
 router.get('/employee/:_id',authenticate,authorizeAdmin,adminController.getEmployeeProfile);
+router.post('/interests',authenticate,authorizeAdmin, adminController.createInterest);
+
+
+router.get('/interests',authenticate,authorizeAdmin, adminController.getAllInterests);
 
 module.exports=router;
