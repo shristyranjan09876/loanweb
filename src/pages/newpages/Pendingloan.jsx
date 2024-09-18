@@ -1,4 +1,4 @@
-import axios from 'axios'; // Add missing axios import
+import axios from 'axios'; 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './CompleteLoan.css'; 
@@ -38,42 +38,46 @@ const Pendingloan = () => {
 
   return (
     <div className="loan-container">
-      <h2 className="loan-title">Pending Loans</h2>
-
-      {/* {loading ? (
-        <p>Loading pending loans...</p>
-      ) : error ? (
-        <p>{error}</p>
-      ) : loanRequests.length === 0 ? (
-        <p>No pending loans available.</p>
-      ) : ( */}
-        <table className="loan-table">
-          <thead>
-            <tr>
-              <th>Loan Amount</th>
-              <th>Applied Date</th>
-              <th>Purpose</th>
-              <th>Tenure</th>
-              <th>Status</th>
-              <th>View</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loanRequests.map((loan, index) => (
+    <h2 className="loan-title">Pending Loans</h2>
+    {loading ? (
+      <p>Loading loan data...</p>
+    ) : error ? (
+      <p>{error}</p>
+    ) : (
+      <table className="loan-table">
+        <thead>
+          <tr>
+            <th>Loan Amount</th>
+            <th>Apply Date</th>
+            <th>Purpose</th>
+            <th>Tenure</th>
+            <th>Status</th>
+            <th>View</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loanRequests.length > 0 ? (
+            loanRequests.map((loan, index) => (
               <tr key={index} className="loan-row">
                 <td>${loan.amount}</td>
-                {/* <td>{loan.appliedDate}</td> */}
                 <td>{moment(loan.appliedDate).format('MMM Do YY')}</td>
                 <td>{loan.purpose || 'N/A'}</td>
-                <td>{loan.tenure || 'N/A'}</td> 
-                <td>{loan.status || 'N/A'}</td> 
-                <td><Link to="">View</Link></td>
+                <td>{loan.tenure || 'N/A'}</td>
+                <td>{loan.status || 'N/A'}</td>
+                <td><Link to="/Emi">View</Link></td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      {/* )} */}
-    </div>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6" style={{ textAlign: 'center' }}>
+                No loan records available.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    )}
+  </div>
   );
 };
 

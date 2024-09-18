@@ -159,6 +159,13 @@ const Loanapplic = () => {
                     onChange={handleChange}
                   />
                   <label htmlFor="investment">Investment</label>
+
+                  <input type="radio" id="carloan" name="purpose"
+                    value="carloan"
+                    onChange={handleChange}
+                  />
+                  <label htmlFor="carloan">Car Loan</label>
+                  
                 </div>
               </div>
               <div className="form-section">

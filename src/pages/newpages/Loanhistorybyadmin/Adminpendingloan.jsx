@@ -2,6 +2,7 @@ import axios from 'axios'; // Add missing axios import
 import React, { useEffect, useState } from 'react';
 import '../../newpages/CompleteLoan.css'
 import moment from 'moment';
+import { Link } from 'react-router-dom';
 
 const Pendingloan = () => {
   const [loanStatus] = useState('pending'); 
@@ -51,9 +52,10 @@ const Pendingloan = () => {
             <tr>
               <th>Loan Amount</th>
               <th>Applied Date</th>
-              <th>purpose</th>
-              <th>tenure</th>
-              <th>status</th>
+              <th>Purpose</th>
+              <th>Tenure</th>
+              <th>Status</th>
+              <th>View</th>
             </tr>
           </thead>
           <tbody>
@@ -64,6 +66,7 @@ const Pendingloan = () => {
                 <td>{loan.purpose || 'N/A'}</td>
                 <td>{loan.tenure || 'N/A'}</td> 
                 <td>{loan.status || 'N/A'}</td> 
+                <td><Link to="/emi">View</Link></td>
               </tr>
             ))}
           </tbody>

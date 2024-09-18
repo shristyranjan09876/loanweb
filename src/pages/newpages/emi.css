@@ -1,0 +1,63 @@
+.container-emi {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-left: 50px;
+    height: 70vh;
+  }
+  .loan-emi{
+    background-color: #f9f9f9;
+    width: 160vh;
+    
+  }
+  .loan-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #343a40;
+  }
+  
+  .loan-summary {
+    margin-bottom: 20px;
+  }
+  
+  .loan-info p {
+    margin-bottom: 10px;
+  }
+  
+  .loan-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    width: 70vh;
+    justify-content: center !important;
+    align-items: center;
+  }
+  
+  .loan-table th, .loan-table td {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .loan-table th {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .loan-table tr:nth-child(even) {
+    background-color: #f1f1f1;
+  }
+  
+  .loan-table tbody tr:hover {
+    background-color: #e9ecef;
+  }
+  
+  .text-danger {
+    font-weight: bold;
+  }
+  
+  .text-success {
+    font-weight: bold;
+  }
+  

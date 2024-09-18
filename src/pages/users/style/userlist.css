@@ -18,7 +18,8 @@
 }
 
 .user-table th {
-  background-color: #007bff;
+  /* background-color: #007bff; */
+  background-color: black;
   color: #fff;
 }
 
@@ -49,9 +50,6 @@
   background-color: #28a745; /* Green */
 }
 
-.delete-button {
-  background-color: #dc3545; /* Red */
-}
 
 .edit-button:hover {
   background-color: #218838;

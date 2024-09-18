@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './style/Approveorrej.css';
 
@@ -9,8 +9,8 @@ const Approveorrej = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [loanStatus, setLoanStatus] = useState('pending'); 
-  
+  const [loanStatus, setLoanStatus] = useState('pending');
+
   useEffect(() => {
     const fetchLoanRequests = async () => {
       try {
@@ -29,7 +29,7 @@ const Approveorrej = () => {
         setLoading(false);
       }
     };
-  
+
     fetchLoanRequests();
   }, [loanStatus]);
 
@@ -49,7 +49,7 @@ const Approveorrej = () => {
         },
       });
       setSuccess('Loan approved successfully');
-      setLoanRequests(loanRequests.filter((loan) => loan._id !== selectedLoanId)); 
+      setLoanRequests(loanRequests.filter((loan) => loan._id !== selectedLoanId));
       setLoading(false);
       setShowModal(false);
     } catch (error) {
@@ -57,18 +57,21 @@ const Approveorrej = () => {
       setLoading(false);
     }
   };
+  console.log(localStorage.getItem('token'))
 
   const handleReject = async (_id) => {
     try {
       setLoading(true);
-      await axios.put(`http://localhost:3000/api/admin/loans/reject/${_id}`, {}, {
+      await axios.get(`http://localhost:3000/api/admin/loans/reject/${_id}`, {
         headers: {
           'Content-Type': 'application/json',
           'x-access-token': localStorage.getItem('token'),
+
         },
       });
       setSuccess('Loan rejected successfully');
-      setLoanRequests(loanRequests.filter((loan) => loan._id !== _id)); 
+      // console.log( localStorage.getItem('token'))
+      setLoanRequests(loanRequests.filter((loan) => loan.id !== id));
       setLoading(false);
     } catch (error) {
       setError('Failed to reject the loan');
@@ -85,10 +88,10 @@ const Approveorrej = () => {
       {/* Loan Status Dropdown */}
       <div className="loan-status-dropdown">
         <label htmlFor="loanStatus" className="form-label">Filter by Loan Status:</label>
-        <select 
-          id="loanStatus" 
-          className="form-select" 
-          value={loanStatus} 
+        <select
+          id="loanStatus"
+          className="form-select"
+          value={loanStatus}
           onChange={(e) => setLoanStatus(e.target.value)}
         >
           <option value="pending">Pending Loans</option>
@@ -109,18 +112,16 @@ const Approveorrej = () => {
                   <th>Amount</th>
                   <th>Purpose</th>
                   <th>Status</th>
-                  <th>Employee Salary</th>
                   <th>Tenure</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {loanRequests.map((loan , index) => (
+                {loanRequests.map((loan, index) => (
                   <tr key={index}>
                     <td>{loan.amount}</td>
                     <td>{loan.purpose}</td>
                     <td>{loan.status}</td>
-                    <td>{loan.employeeDetails.salary}</td>
                     <td>{loan.tenure}</td>
                     <td>
                       {loan.status === 'pending' && (

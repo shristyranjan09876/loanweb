@@ -65,57 +65,29 @@ const Edituser = () => {
       <h1>Edit User</h1>
       <form onSubmit={handleSubmit}>
         <label>First Name:</label>
-        <input
-          type="text"
-          name="firstName"
-          value={edit.firstName}
-          onChange={handleInputChange}
-        />
+        <input type="text" name="firstName" value={edit.firstName} onChange={handleInputChange} />
         <br />
         <label>Last Name:</label>
-        <input
-          type="text"
-          name="lastName"
-          value={edit.lastName}
-          onChange={handleInputChange}
-        />
+        <input type="text" name="lastName" value={edit.lastName} onChange={handleInputChange} />
         <br />
         <label>Date of Birth:</label>
-        <input
-          type="date"
-          name="dateOfBirth"
-          value={edit.dateOfBirth}
-          onChange={handleInputChange}
+        <input type="date" name="dateOfBirth" value={edit.dateOfBirth} onChange={handleInputChange}
         />
         <br />
         <label>Department:</label>
-        <input
-          type="text"
-          name="department"
-          value={edit.department}
-          onChange={handleInputChange}
+        <input type="text" name="department" value={edit.department} onChange={handleInputChange}
         />
         <br />
         <label>Position:</label>
-        <input
-          type="text"
-          name="position"
-          value={edit.position}
-          onChange={handleInputChange}
+        <input type="text" name="position" value={edit.position} onChange={handleInputChange}
         />
         <br />
         <label>Salary:</label>
-        <input
-          type="number"
-          name="salary"
-          value={edit.salary}
-          onChange={handleInputChange}
+        <input type="number" name="salary" value={edit.salary} onChange={handleInputChange}
         />
         <br />
         <label>Join Date:</label>
-        <input
-          type="date"
-          name="joinDate"
+        <input type="date"  name="joinDate"
           value={edit.joinDate}
           onChange={handleInputChange}
         />

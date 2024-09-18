@@ -1,53 +1,83 @@
 
-  .table-aprv{
-    width: 170%;
-padding-left: 20px;
-  }
-  .table-aprv th,
-.table-aprv td {
-  padding: 20px ; /* Adds padding inside table cells */
-  align-items: center;
+.table-container {
+ display: flex;
+  justify-content: center;
+  overflow-x: auto; 
 }
+
+
+.table-aprv {
+  width: 173vh;
+  margin: 0 auto;
+  padding: 20px; 
+  border-spacing: 0 10px;
+}
+
+.table-aprv th,
+.table-aprv td {
+  padding: 15px;
+  text-align: center;
+  vertical-align: middle;
+}
+
 
 .thead-dark th {
   background-color: #343a40;
   color: white;
+  padding: 15px;
 }
+
+/* Table row styling */
 .table-aprv tr {
-  border-bottom: 1px solid #ddd; /* Adds border between rows */
+  border-bottom: 1px solid #ddd;
 }
 
 .table-aprv td {
-  vertical-align: middle; /* Aligns content in the middle vertically */
+  vertical-align: middle;
+  text-align: center;
 }
+
 
 .d-flex.gap-2 {
-  gap: 10px; /* Adjusts the gap between buttons */
+  gap: 10px;
+  justify-content: center; 
 }
 
-  .confirm-button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-  }
-  
-  .cancel-button {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-  }
-  
-  @media (max-width: 767px) {
-    .table-container {
-      width: 220%;
-      overflow-x: auto;
-    }
+/* Modal button styling */
+.confirm-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  .table-container {
+    width: 100%; /* Ensures full-width on smaller screens */
+    overflow-x: auto;
   }
 
+  .table-aprv {
+    width: 100%; /* Full width for mobile screens */
+  }
+
+  .table-aprv th,
+  .table-aprv td {
+    padding: 10px; /* Slightly reduce padding on smaller screens */
+  }
+}
 
 
   .loan-status-dropdown{

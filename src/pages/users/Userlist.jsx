@@ -89,8 +89,12 @@ const UserList = () => {
                   <td>{user.userDetails.email}</td>
                  
                   <td className="modal-actions">
-                    <button onClick={() => handleEdit(user._id)} className="edit-button">Edit</button>
-                    <button onClick={() => confirmDelete(user._id)} className="delete-button">Delete</button>
+                    <button onClick={() => handleEdit(user._id)} className="edit-button">
+                    <img src='src/assets/edit.png' height="20px" width="20px" />
+                    </button>
+                    <button onClick={() => confirmDelete(user._id)} className="delete-button">
+                    <img src='src/assets/delete.png' height="20px" width="20px" />
+                    </button>
                   </td>
                 </tr>
               ))

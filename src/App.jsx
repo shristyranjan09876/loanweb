@@ -21,8 +21,9 @@ import ProfilePage from './pages/users/ProfilePage';
 import EditProfilePage from './pages/users/Editprofile';
 import Approveorrej from './pages/users/Approveorrej';
 import Admincmpltloan from './pages/newpages/Loanhistorybyadmin/admincmpltloan';
-import Adminpendingloan from './pages/newpages/Loanhistorybyadmin/adminpendingloan';
+import Adminpendingloan from './pages/newpages/Loanhistorybyadmin/Adminpendingloan';
 import Adminewapply from './pages/newpages/Loanhistorybyadmin/Adminewapply';
+import Emi from './pages/newpages/Emi'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -70,6 +71,7 @@ function App() {
               <Route path="/adminewapply" element={<ProtectedRoute><Adminewapply /></ProtectedRoute>}/>
               <Route path="/adminpendingloan" element={<ProtectedRoute><Adminpendingloan /></ProtectedRoute>}/>
                 {/* *****end***** */}
+                <Route path="/emi" element={<ProtectedRoute><Emi /></ProtectedRoute>}/>
             </Routes>
           </BrowserRouter>
         </div>
