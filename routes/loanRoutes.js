@@ -42,5 +42,5 @@ router.get('/admin/loans/reject/:loanId', authenticate, authorizeAdmin, loanCont
 router.post('/submitEMI/:loanId/',authenticate, loanController.submitEMI);
 // Update loan status (New route)
 router.put('/loans/:id/status', authenticate,authorizeAdmin ,loanController.updateLoanStatus);
-router.get('/loans/profile', authenticate, loanController.getEmployeeProfile);
+router.get('/loans/:loanId', authenticate, loanController.getSingleLoan);
 module.exports = router;

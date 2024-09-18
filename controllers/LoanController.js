@@ -71,100 +71,6 @@ exports.applyForLoan = async (req, res) => {
 };
 
 
-
-
-exports.getEmployeeProfile = async (req, res) => {
-    console.log('--- Start of getEmployeeProfile function ---');
-    try {
-        console.log('Authenticated user:', req.user);
-        if (!req.user) {
-            console.log('Authentication required: User not authenticated');
-            return res.status(401).json({ error: 'Authentication required' });
-        }
-
-        let employeeId;
-        const isAdmin = req.user.role === 'admin';
-        console.log('Is admin:', isAdmin);
-
-        if (isAdmin && req.query.employeeId) {
-            // Admin is requesting a specific employee's profile
-            employeeId = req.query.employeeId;
-            console.log('Admin requesting profile for employeeId:', employeeId);
-        } else {
-            // Employee is requesting their own profile
-            const userId = req.user._id;
-            console.log('Employee requesting own profile, userId:', userId);
-            
-            const employee = await Employee.findOne({ user: userId });
-            if (!employee) {
-                console.log('Employee not found for userId:', userId);
-                return res.status(404).json({ error: 'Employee not found' });
-            }
-            employeeId = employee._id;
-        }
-
-        console.log('Fetching employee details for employeeId:', employeeId);
-        const employee = await Employee.findById(employeeId);
-        console.log('Employee found:', employee);
-        if (!employee) {
-            console.log('Employee not found for employeeId:', employeeId);
-            return res.status(404).json({ error: 'Employee not found' });
-        }
-
-        console.log('Fetching user details');
-        const user = await User.findById(employee.user).select('-password');
-        console.log('User details:', user);
-
-        console.log('Fetching loans for employee');
-        const loans = await Loan.find({ employee: employeeId });
-        console.log('Loans found:', loans.length);
-
-        console.log('Categorizing loans');
-        const categorizedLoans = {
-            pending: [],
-            approved: [],
-            completed: []
-        };
-
-        loans.forEach(loan => {
-            console.log('Processing loan:', loan._id, 'Status:', loan.status);
-            if (loan.status === 'pending') categorizedLoans.pending.push(loan);
-            else if (loan.status === 'approved') categorizedLoans.approved.push(loan);
-            else if (loan.status === 'completed') categorizedLoans.completed.push(loan);
-        });
-
-        console.log('Categorized loans:', {
-            pending: categorizedLoans.pending.length,
-            approved: categorizedLoans.approved.length,
-            completed: categorizedLoans.completed.length
-        });
-
-        console.log('Preparing profile object');
-        const profile = {
-            employee: {
-                id: employee._id,
-                name: employee.name,
-                position: employee.position,
-                department: employee.department,
-                salary: employee.salary,
-                joiningDate: employee.joiningDate
-            },
-            user: {
-                id: user._id,
-                email: user.email,
-                role: user.role
-            },
-            loans: categorizedLoans
-        };
-
-        console.log('Employee profile prepared successfully');
-        console.log('Sending response');
-        return res.status(200).json({ profile, status: 200 });
-    } catch (error) {
-        console.error('Error fetching employee profile:', error);
-        return res.status(500).json({ error: error.message });
-    }
-};
 exports.loanHistory = async (req, res) => {
     try {
         // Check if the user is authenticated
@@ -207,6 +113,35 @@ exports.loanHistory = async (req, res) => {
 
 
 
+
+exports.getSingleLoan = async (req, res) => {
+    console.log('--- Start of getSingleLoan function ---');
+    try {
+        const { loanId } = req.params;
+        const userId = req.user._id;
+
+        console.log('Finding employee by userId:', userId);
+        const employee = await Employee.findOne({ user: userId });
+        if (!employee) {
+            console.log('Employee not found for userId:', userId);
+            return res.status(404).json({ error: 'Employee not found', status: 404 });
+        }
+
+        console.log('Finding loan by loanId:', loanId);
+        const loan = await Loan.findOne({ _id: loanId, employee: employee._id });
+        
+        if (!loan) {
+            console.log('Loan not found or not associated with the employee:', loanId);
+            return res.status(404).json({ error: 'Loan not found or not authorized to view this loan', status: 404 });
+        }
+
+        console.log('Loan fetched successfully:', loan);
+        return res.status(200).json({ loan, status: 200 });
+    } catch (error) {
+        console.error('Error fetching single loan:', error);
+        return res.status(500).json({ error: error.message, status: 500 });
+    }
+};
 
 
 // Get all loan applications with employee details
@@ -425,7 +360,6 @@ exports.submitEMI = async (req, res) => {
 
         // Update the repayment schedule
         let totaloverdueAmount = 0;
-        let isLoanCompleted = false;
         loan.repaymentSchedule = loan.repaymentSchedule.map((installment) => {
             if (installment.dueDate.toISOString().slice(0, 10) === repaymentDate) {
                 const remainingAmount = Number(installment.amount) - paidAmount;
@@ -434,11 +368,12 @@ exports.submitEMI = async (req, res) => {
                     // Update the status to 'partially paid'
                     installment.status = 'partially paid';
                     installment.amount = installment.amount.toFixed(2);
-                    installment.overdueAmount = remainingAmount.toFixed(2);
+                    installment.overdueAmount=remainingAmount.toFixed(2);
                 } else {
                     // Update the status to 'paid'
                     installment.status = 'paid';
                     installment.overdueAmount = '0.00';
+                    
                 }
                 installment.paidAmount = paidAmount.toFixed(2); // Track the paid amount
             }
@@ -451,20 +386,16 @@ exports.submitEMI = async (req, res) => {
 
         // Update the loan document with new repayment schedule and total overdue amount
         loan.totaloverdueAmount = totaloverdueAmount.toFixed(2);  // Track the total overdue amount
-
-        // Check if the total overdue amount is zero and close the loan if it is
         if (loan.totaloverdueAmount === '0.00') {
             loan.status = 'completed';  // Set the status to 'completed'
             loan.closedAt = new Date(); // Optionally track when the loan was closed
-            isLoanCompleted = true;
         }
-
         await loan.save();
 
         console.log('Repayment processed successfully:', loan);
 
         return res.status(200).json({
-            message: isLoanCompleted ? 'Loan completed and closed successfully' : 'Repayment submitted successfully',
+            message: 'Repayment submitted successfully',
             loan,
             totaloverdueAmount,
             status: 200
@@ -474,7 +405,6 @@ exports.submitEMI = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
-
 
 
 const transporter = nodemailer.createTransport({
