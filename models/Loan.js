@@ -15,7 +15,7 @@ const LoanSchema = new mongoose.Schema({
     repaymentSchedule: [{
         dueDate: { type: Date },
         amount: { type: Number },
-        pendingAmount:{type:Number},
+        overdueAmount:{type:Number},
         status: { type: String, enum: ['pending', 'paid','partially paid'], default: 'pending' },
       }],
       documents: [{ type: String,  }],

@@ -7,9 +7,6 @@ const Interest = require('../models/InterestRate'); // Ensure this path is corre
 dotenv.config(); 
 // Apply for Loan
 
-
-
-
 exports.applyForLoan = async (req, res) => {
     console.log('--- Start of applyForLoan function ---');
     try {
@@ -33,16 +30,6 @@ exports.applyForLoan = async (req, res) => {
             return res.status(404).json({ error: 'Employee not found' });
         }
 
-        console.log('Finding current interest rate');
-        const interest = await Interest.findOne();
-        if (!interest) {
-            console.log('Interest rate not found');
-            return res.status(404).json({ error: 'Interest rate not found' });
-        }
-
-        const interestRate = interest.interestRate;
-        console.log('Interest rate retrieved:', interestRate);
-
         console.log('Checking for pending loans for employee:', employee._id);
         const pendingLoans = await Loan.find({ employee: employee._id, status: 'pending' });
         const pendingAmount = pendingLoans.reduce((sum, loan) => sum + loan.amount, 0);
@@ -51,32 +38,6 @@ exports.applyForLoan = async (req, res) => {
         if (Number(amount) > maxLoanAmount) {
             console.log('Loan amount exceeds limit. Requested amount:', amount, 'Max allowed:', maxLoanAmount);
             return res.status(400).json({ error: `Loan amount exceeds the limit of ${maxLoanAmount}` });
-        }
-
-        // Calculate the total interest using the annual interest rate
-        console.log('Calculating annual interest for amount:', amount);
-
-        const annualInterestRate = Number(interestRate) / 100;  // Annual interest rate as a percentage
-
-        // Total interest for the entire tenure (simple interest formula)
-        const totalInterest = Number(amount) * annualInterestRate * (tenure / 12);  // Convert tenure to years
-
-        // Calculate monthly repayments with interest
-        const totalRepaymentAmount = Number(amount) + totalInterest;  // Principal + total interest
-        const monthlyRepayment = (totalRepaymentAmount / requestedRepaymentPeriod).toFixed(2);  // Use requestedRepaymentPeriod for calculation
-
-        const repaymentSchedule = [];
-        for (let i = 1; i <= requestedRepaymentPeriod; i++) {
-            const dueDate = new Date();
-            dueDate.setMonth(dueDate.getMonth() + i);
-
-            repaymentSchedule.push({
-                dueDate,
-                amount: monthlyRepayment,
-                interest: (totalInterest / requestedRepaymentPeriod).toFixed(2),  // Split total interest equally across all months
-                principal: (Number(amount) / requestedRepaymentPeriod).toFixed(2),
-                status: 'pending'
-            });
         }
 
         // Handle file uploads
@@ -89,11 +50,7 @@ exports.applyForLoan = async (req, res) => {
             purpose,
             requestedRepaymentPeriod,
             tenure,
-            interestRate,
-            interestAmount: totalInterest.toFixed(2),  // Total interest based on annual rate
-            outstandingAmount: totalRepaymentAmount.toFixed(2),  // Principal + total interest
             status: 'pending',
-            repaymentSchedule,
             documents
         });
 
@@ -105,8 +62,6 @@ exports.applyForLoan = async (req, res) => {
         return res.status(201).json({
             message: 'Loan application submitted successfully',
             loan: newLoan,
-            totalInterest: totalInterest.toFixed(2),  // Total interest displayed
-            outstandingAmount: totalRepaymentAmount.toFixed(2),  // Total payable amount
             status: 201
         });
     } catch (error) {
@@ -118,6 +73,98 @@ exports.applyForLoan = async (req, res) => {
 
 
 
+exports.getEmployeeProfile = async (req, res) => {
+    console.log('--- Start of getEmployeeProfile function ---');
+    try {
+        console.log('Authenticated user:', req.user);
+        if (!req.user) {
+            console.log('Authentication required: User not authenticated');
+            return res.status(401).json({ error: 'Authentication required' });
+        }
+
+        let employeeId;
+        const isAdmin = req.user.role === 'admin';
+        console.log('Is admin:', isAdmin);
+
+        if (isAdmin && req.query.employeeId) {
+            // Admin is requesting a specific employee's profile
+            employeeId = req.query.employeeId;
+            console.log('Admin requesting profile for employeeId:', employeeId);
+        } else {
+            // Employee is requesting their own profile
+            const userId = req.user._id;
+            console.log('Employee requesting own profile, userId:', userId);
+            
+            const employee = await Employee.findOne({ user: userId });
+            if (!employee) {
+                console.log('Employee not found for userId:', userId);
+                return res.status(404).json({ error: 'Employee not found' });
+            }
+            employeeId = employee._id;
+        }
+
+        console.log('Fetching employee details for employeeId:', employeeId);
+        const employee = await Employee.findById(employeeId);
+        console.log('Employee found:', employee);
+        if (!employee) {
+            console.log('Employee not found for employeeId:', employeeId);
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+
+        console.log('Fetching user details');
+        const user = await User.findById(employee.user).select('-password');
+        console.log('User details:', user);
+
+        console.log('Fetching loans for employee');
+        const loans = await Loan.find({ employee: employeeId });
+        console.log('Loans found:', loans.length);
+
+        console.log('Categorizing loans');
+        const categorizedLoans = {
+            pending: [],
+            approved: [],
+            completed: []
+        };
+
+        loans.forEach(loan => {
+            console.log('Processing loan:', loan._id, 'Status:', loan.status);
+            if (loan.status === 'pending') categorizedLoans.pending.push(loan);
+            else if (loan.status === 'approved') categorizedLoans.approved.push(loan);
+            else if (loan.status === 'completed') categorizedLoans.completed.push(loan);
+        });
+
+        console.log('Categorized loans:', {
+            pending: categorizedLoans.pending.length,
+            approved: categorizedLoans.approved.length,
+            completed: categorizedLoans.completed.length
+        });
+
+        console.log('Preparing profile object');
+        const profile = {
+            employee: {
+                id: employee._id,
+                name: employee.name,
+                position: employee.position,
+                department: employee.department,
+                salary: employee.salary,
+                joiningDate: employee.joiningDate
+            },
+            user: {
+                id: user._id,
+                email: user.email,
+                role: user.role
+            },
+            loans: categorizedLoans
+        };
+
+        console.log('Employee profile prepared successfully');
+        console.log('Sending response');
+        return res.status(200).json({ profile, status: 200 });
+    } catch (error) {
+        console.error('Error fetching employee profile:', error);
+        return res.status(500).json({ error: error.message });
+    }
+};
 exports.loanHistory = async (req, res) => {
     try {
         // Check if the user is authenticated
@@ -255,18 +302,64 @@ exports.approveLoan = async (req, res) => {
             return res.status(400).json({ error: 'Only pending loans can be approved' });
         }
 
+        console.log('Finding current interest rate');
+        const interest = await Interest.findOne();
+        if (!interest) {
+            console.log('Interest rate not found');
+            return res.status(404).json({ error: 'Interest rate not found' });
+        }
+
+        const interestRate = interest.interestRate;
+        console.log('Interest rate retrieved:', interestRate);
+
+        // Calculate the total interest using the annual interest rate
+        console.log('Calculating annual interest for amount:', loan.amount);
+
+        const annualInterestRate = Number(interestRate) / 100;  // Annual interest rate as a percentage
+
+        // Total interest for the entire tenure (simple interest formula)
+        const totalInterest = Number(loan.amount) * annualInterestRate * (loan.tenure / 12);  // Convert tenure to years
+
+        // Calculate monthly repayments with interest
+        const totalRepaymentAmount = Number(loan.amount) + totalInterest;  // Principal + total interest
+        const monthlyRepayment = (totalRepaymentAmount / loan.requestedRepaymentPeriod).toFixed(2);  // Use requestedRepaymentPeriod for calculation
+
+        const repaymentSchedule = [];
+        for (let i = 1; i <= loan.requestedRepaymentPeriod; i++) {
+            const dueDate = new Date();
+            dueDate.setMonth(dueDate.getMonth() + i);
+
+            repaymentSchedule.push({
+                dueDate,
+                amount: monthlyRepayment,
+                interest: (totalInterest / loan.requestedRepaymentPeriod).toFixed(2),  // Split total interest equally across all months
+                principal: (Number(loan.amount) / loan.requestedRepaymentPeriod).toFixed(2),
+                status: 'pending'
+            });
+        }
+
         loan.status = 'approved';
         loan.disburseDate = new Date();
+        loan.interestAmount = totalInterest.toFixed(2);  // Total interest based on annual rate
+        loan.outstandingAmount = totalRepaymentAmount.toFixed(2);  // Principal + total interest
+        loan.repaymentSchedule = repaymentSchedule;
 
         await loan.save();
 
         console.log('Loan approved successfully:', loan);
-        return res.status(200).json({ message: 'Loan approved successfully', loan ,status:200 });
+        return res.status(200).json({ 
+            message: 'Loan approved successfully', 
+            loan, 
+            totalInterest: totalInterest.toFixed(2),  // Total interest included in the response
+            outstandingAmount: totalRepaymentAmount.toFixed(2),  // Outstanding amount included in the response
+            status: 200 
+        });
     } catch (error) {
         console.error('Loan approval error:', error);
         return res.status(500).json({ error: error.message });
     }
 };
+
 
 // Reject Loan
 exports.rejectLoan = async (req, res) => {
@@ -331,7 +424,8 @@ exports.submitEMI = async (req, res) => {
         }
 
         // Update the repayment schedule
-        let totalOverdueAmount = 0;
+        let totaloverdueAmount = 0;
+        let isLoanCompleted = false;
         loan.repaymentSchedule = loan.repaymentSchedule.map((installment) => {
             if (installment.dueDate.toISOString().slice(0, 10) === repaymentDate) {
                 const remainingAmount = Number(installment.amount) - paidAmount;
@@ -340,33 +434,39 @@ exports.submitEMI = async (req, res) => {
                     // Update the status to 'partially paid'
                     installment.status = 'partially paid';
                     installment.amount = installment.amount.toFixed(2);
-                    installment.pendingAmount=remainingAmount.toFixed(2);
+                    installment.overdueAmount = remainingAmount.toFixed(2);
                 } else {
                     // Update the status to 'paid'
                     installment.status = 'paid';
-                    installment.pendingAmount = '0.00';
-                    
+                    installment.overdueAmount = '0.00';
                 }
                 installment.paidAmount = paidAmount.toFixed(2); // Track the paid amount
             }
             // Calculate overdue amounts
             if (installment.status === 'partially paid') {
-                totalOverdueAmount += Number(installment.pendingAmount);
+                totaloverdueAmount += Number(installment.overdueAmount);
             }
             return installment;
         });
 
         // Update the loan document with new repayment schedule and total overdue amount
-        loan.totalOverdueAmount = totalOverdueAmount.toFixed(2);  // Track the total overdue amount
+        loan.totaloverdueAmount = totaloverdueAmount.toFixed(2);  // Track the total overdue amount
+
+        // Check if the total overdue amount is zero and close the loan if it is
+        if (loan.totaloverdueAmount === '0.00') {
+            loan.status = 'completed';  // Set the status to 'completed'
+            loan.closedAt = new Date(); // Optionally track when the loan was closed
+            isLoanCompleted = true;
+        }
 
         await loan.save();
 
         console.log('Repayment processed successfully:', loan);
 
         return res.status(200).json({
-            message: 'Repayment submitted successfully',
+            message: isLoanCompleted ? 'Loan completed and closed successfully' : 'Repayment submitted successfully',
             loan,
-            totalOverdueAmount,
+            totaloverdueAmount,
             status: 200
         });
     } catch (error) {
@@ -374,15 +474,6 @@ exports.submitEMI = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
-
-
-
-
-
-
-
-
-
 
 
 
