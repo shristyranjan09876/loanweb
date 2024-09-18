@@ -4,7 +4,7 @@ import axios from 'axios';
 import moment from 'moment';
 
 const Newapply = () => {
-  const [loanStatus] = useState('approved'); 
+  const [loanStatus] = useState('pending'); 
   const [loanRequests, setLoanRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(''); 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Table } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import '../newpages/emi.css'
 
 const LoanDetails = () => {
@@ -29,7 +29,7 @@ const LoanDetails = () => {
         </div>
       </div>
       <div className="emibutn">
-          <button className="btn btn-primary m-0">pay</button>
+          <Button className="btn btn-primary m-0">pay</Button>
         </div>
      
     </div>

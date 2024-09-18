@@ -5,7 +5,7 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 
 const Pendingloan = () => {
-  const [loanStatus] = useState('pending'); 
+  const [loanStatus] = useState('approved'); 
   const [loanRequests, setLoanRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(''); 

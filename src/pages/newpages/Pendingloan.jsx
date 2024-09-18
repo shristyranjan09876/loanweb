@@ -5,7 +5,7 @@ import './CompleteLoan.css';
 import moment from 'moment';
 
 const Pendingloan = () => {
-  const [loanStatus] = useState('pending'); 
+  const [loanStatus] = useState('approved'); 
   const [loanRequests, setLoanRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(''); 

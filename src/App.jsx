@@ -24,6 +24,7 @@ import Admincmpltloan from './pages/newpages/Loanhistorybyadmin/admincmpltloan';
 import Adminpendingloan from './pages/newpages/Loanhistorybyadmin/Adminpendingloan';
 import Adminewapply from './pages/newpages/Loanhistorybyadmin/Adminewapply';
 import Emi from './pages/newpages/Emi'
+import PayEMI from './pages/newpages/Payemi';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -72,6 +73,7 @@ function App() {
               <Route path="/adminpendingloan" element={<ProtectedRoute><Adminpendingloan /></ProtectedRoute>}/>
                 {/* *****end***** */}
                 <Route path="/emi" element={<ProtectedRoute><Emi /></ProtectedRoute>}/>
+                <Route path="/payEMI" element={<ProtectedRoute><PayEMI /></ProtectedRoute>}/>
             </Routes>
           </BrowserRouter>
         </div>
