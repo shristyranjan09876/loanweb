@@ -119,24 +119,48 @@ exports.getSingleLoan = async (req, res) => {
     try {
         const { loanId } = req.params;
         const userId = req.user._id;
+        const isAdmin = req.user.role === 'admin'; // Assuming role is stored in user object
 
-        console.log('Finding employee by userId:', userId);
-        const employee = await Employee.findOne({ user: userId });
-        if (!employee) {
-            console.log('Employee not found for userId:', userId);
-            return res.status(404).json({ error: 'Employee not found', status: 404 });
+        console.log('User ID:', userId, 'Is Admin:', isAdmin);
+
+        let loan;
+        let employeeName = '';
+
+        if (isAdmin) {
+            console.log('Admin access: Fetching loan directly');
+            // Correcting to firstName and lastName as defined in your schema
+            loan = await Loan.findById(loanId).populate('employee', 'firstName lastName');
+            
+            if (loan && loan.employee) {
+                const { firstName = '', lastName = '' } = loan.employee;  // Correct field names
+                employeeName = `${firstName} ${lastName}`.trim();  // Combine firstName and lastName
+            }
+        } else {
+            console.log('Employee access: Finding employee by userId:', userId);
+            const employee = await Employee.findOne({ user: userId });
+            
+            if (!employee) {
+                console.log('Employee not found for userId:', userId);
+                return res.status(404).json({ error: 'Employee not found', status: 404 });
+            }
+
+            console.log('Finding loan by loanId:', loanId);
+            loan = await Loan.findOne({ _id: loanId, employee: employee._id });
         }
 
-        console.log('Finding loan by loanId:', loanId);
-        const loan = await Loan.findOne({ _id: loanId, employee: employee._id });
-        
         if (!loan) {
-            console.log('Loan not found or not associated with the employee:', loanId);
+            console.log('Loan not found or not authorized to view this loan:', loanId);
             return res.status(404).json({ error: 'Loan not found or not authorized to view this loan', status: 404 });
         }
 
         console.log('Loan fetched successfully:', loan);
-        return res.status(200).json({ loan, status: 200 });
+        
+        const response = { loan, status: 200 };
+        if (isAdmin && employeeName) {
+            response.employeeName = employeeName;
+        }
+
+        return res.status(200).json(response);
     } catch (error) {
         console.error('Error fetching single loan:', error);
         return res.status(500).json({ error: error.message, status: 500 });
