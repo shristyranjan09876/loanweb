@@ -386,8 +386,15 @@ exports.submitEMI = async (req, res) => {
           return res.status(404).json({ message: 'No installment found for the given repaymentDate' });
         }
   
-        // Update the installment based on paid amount
+        // Check if user is trying to overpay this installment
         let dueAmount = installment.amount - installment.paidAmount;
+        if (remainingPayment > dueAmount) {
+          return res.status(400).json({ 
+            message: `Overpayment detected. Remaining amount for this installment is ${dueAmount.toFixed(2)}. Please enter a valid amount.` 
+          });
+        }
+  
+        // Update the installment based on paid amount
         if (remainingPayment >= dueAmount) {
           installment.paidAmount += dueAmount;
           installment.status = 'paid';
@@ -398,6 +405,14 @@ exports.submitEMI = async (req, res) => {
           remainingPayment = 0;
         }
         installment.overdueAmount = installment.amount - installment.paidAmount;
+      }
+  
+      // Calculate total overdue amount before applying payments
+      let totalOverdueAmount = loan.repaymentSchedule.reduce((total, inst) => total + inst.overdueAmount, 0);
+  
+      // If user is trying to pay directly towards overdue without specifying an installment
+      if (!repaymentDate && totalOverdueAmount === 0) {
+        return res.status(400).json({ message: 'You have no overdue yet. Please pay your EMI first.' });
       }
   
       // If any remaining payment is left, apply it to overdue amounts
@@ -420,8 +435,8 @@ exports.submitEMI = async (req, res) => {
         }
       }
   
-      // Calculate total overdue and remaining amounts
-      let totalOverdueAmount = 0;
+      // Recalculate total overdue and remaining amounts
+      totalOverdueAmount = 0;
       let totalRemainingAmount = 0;
   
       for (let inst of loan.repaymentSchedule) {
@@ -455,6 +470,7 @@ exports.submitEMI = async (req, res) => {
       res.status(500).json({ message: 'Server Error' });
     }
   };
+  
   
   
 
