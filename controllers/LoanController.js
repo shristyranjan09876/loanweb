@@ -356,79 +356,108 @@ exports.rejectLoan = async (req, res) => {
     }
 };
 
+;
+
+
+// API to submit an EMI payment
 exports.submitEMI = async (req, res) => {
-    console.log('--- Start of submitPayment function ---');
     try {
-        const loanId = req.params.loanId;  // Access the loanId parameter
-        const { repaymentDate, paidAmount } = req.body;  // Repayment details from request body
-
-        // Log the extracted values
-        console.log('Received repayment request:');
-        console.log('Loan ID:', loanId);
-        console.log('Repayment Date:', repaymentDate);
-        console.log('Paid Amount:', paidAmount);
-
-        // Validate input
-        if (!repaymentDate || !paidAmount) {
-            return res.status(400).json({ error: 'Repayment date and paid amount are required' });
+      const { loanId } = req.params;
+      const { repaymentDate, paidAmount } = req.body;
+  
+      // Validate inputs
+      if ((!repaymentDate && !paidAmount) || !paidAmount) {
+        return res.status(400).json({ message: 'paidAmount is required' });
+      }
+  
+      // Find the loan
+      let loan = await Loan.findById(loanId);
+      if (!loan) {
+        return res.status(404).json({ message: 'Loan not found' });
+      }
+  
+      let remainingPayment = paidAmount;
+      let installment;
+  
+      // Check if specific installment repayment is being made
+      if (repaymentDate) {
+        installment = loan.repaymentSchedule.find(inst => inst.dueDate.toISOString().split('T')[0] === repaymentDate);
+        if (!installment) {
+          return res.status(404).json({ message: 'No installment found for the given repaymentDate' });
         }
-
-        // Find the loan by ID
-        const loan = await Loan.findById(loanId);
-        
-        // Log the result of the loan query
-        if (!loan) {
-            console.log('Loan not found for loanId:', loanId);
-            return res.status(404).json({ error: 'Loan not found' });
+  
+        // Update the installment based on paid amount
+        let dueAmount = installment.amount - installment.paidAmount;
+        if (remainingPayment >= dueAmount) {
+          installment.paidAmount += dueAmount;
+          installment.status = 'paid';
+          remainingPayment -= dueAmount;
+        } else {
+          installment.paidAmount += remainingPayment;
+          installment.status = 'partially paid';
+          remainingPayment = 0;
         }
-
-        // Update the repayment schedule
-        let totaloverdueAmount = 0;
-        loan.repaymentSchedule = loan.repaymentSchedule.map((installment) => {
-            if (installment.dueDate.toISOString().slice(0, 10) === repaymentDate) {
-                const remainingAmount = Number(installment.amount) - paidAmount;
-
-                if (remainingAmount > 0) {
-                    // Update the status to 'partially paid'
-                    installment.status = 'partially paid';
-                    installment.amount = installment.amount.toFixed(2);
-                    installment.overdueAmount=remainingAmount.toFixed(2);
-                } else {
-                    // Update the status to 'paid'
-                    installment.status = 'paid';
-                    installment.overdueAmount = '0.00';
-                    
-                }
-                installment.paidAmount = paidAmount.toFixed(2); // Track the paid amount
+        installment.overdueAmount = installment.amount - installment.paidAmount;
+      }
+  
+      // If any remaining payment is left, apply it to overdue amounts
+      if (remainingPayment > 0) {
+        for (let inst of loan.repaymentSchedule) {
+          if (inst.overdueAmount > 0) {
+            let dueAmount = inst.overdueAmount;
+            if (remainingPayment >= dueAmount) {
+              inst.paidAmount += dueAmount;
+              inst.overdueAmount = 0;
+              inst.status = 'paid';
+              remainingPayment -= dueAmount;
+            } else {
+              inst.paidAmount += remainingPayment;
+              inst.overdueAmount -= remainingPayment;
+              inst.status = 'partially paid';
+              remainingPayment = 0;
             }
-            // Calculate overdue amounts
-            if (installment.status === 'partially paid') {
-                totaloverdueAmount += Number(installment.overdueAmount);
-            }
-            return installment;
-        });
-
-        // Update the loan document with new repayment schedule and total overdue amount
-        loan.totaloverdueAmount = totaloverdueAmount.toFixed(2);  // Track the total overdue amount
-        if (loan.totaloverdueAmount === '0.00') {
-            loan.status = 'completed';  // Set the status to 'completed'
-            loan.closedAt = new Date(); // Optionally track when the loan was closed
+          }
         }
-        await loan.save();
-
-        console.log('Repayment processed successfully:', loan);
-
-        return res.status(200).json({
-            message: 'Repayment submitted successfully',
-            loan,
-            totaloverdueAmount,
-            status: 200
-        });
+      }
+  
+      // Calculate total overdue and remaining amounts
+      let totalOverdueAmount = 0;
+      let totalRemainingAmount = 0;
+  
+      for (let inst of loan.repaymentSchedule) {
+        totalOverdueAmount += inst.overdueAmount;
+        totalRemainingAmount += inst.amount - inst.paidAmount;
+      }
+  
+      // Round the amounts to avoid precision errors
+      totalOverdueAmount = parseFloat(totalOverdueAmount.toFixed(2));
+      totalRemainingAmount = parseFloat(totalRemainingAmount.toFixed(2));
+  
+      // Update loan status if fully paid
+      if (totalRemainingAmount === 0 && totalOverdueAmount === 0) {
+        loan.status = 'completed';
+        loan.closeDate = new Date();
+      }
+  
+      // Save the updated loan
+      await loan.save();
+  
+      // Send response with complete loan details
+      res.json({
+        loan,
+        totalOverdueAmount,
+        totalRemainingAmount,
+        status: loan.status,
+      });
+  
     } catch (error) {
-        console.error('Error processing repayment:', error);
-        return res.status(500).json({ error: error.message });
+      console.error(error);
+      res.status(500).json({ message: 'Server Error' });
     }
-};
+  };
+  
+  
+
 
 
 const transporter = nodemailer.createTransport({

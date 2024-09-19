@@ -43,4 +43,5 @@ router.post('/submitEMI/:loanId/',authenticate, loanController.submitEMI);
 // Update loan status (New route)
 router.put('/loans/:id/status', authenticate,authorizeAdmin ,loanController.updateLoanStatus);
 router.get('/loans/:loanId', authenticate, loanController.getSingleLoan);
+
 module.exports = router;
